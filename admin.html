@@ -1,1464 +1,1925 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Admin — Bluebirds Gift House</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="[cdn-icons-png.flaticon.com](https://cdn-icons-png.flaticon.com/512/3069/3069172.png)"/>
+<link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap)" rel="stylesheet"/>
+<link rel="stylesheet" href="[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css)"/>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "[gstatic.com](https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js)";
+  import { getDatabase, ref, onValue, push, set, remove, get, update }
+    from "[gstatic.com](https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js)";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    databaseURL: "YOUR_DATABASE_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  window._db = db;
+  window._dbRef = ref;
+  window._dbOnValue = onValue;
+  window._dbPush = push;
+  window._dbSet = set;
+  window._dbRemove = remove;
+  window._dbGet = get;
+  window._dbUpdate = update;
+  window._firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
 <style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#1a1008;--warm:#2d1a08;--mid:#6b4c2a;--light:#a8815a;
-  --pale:#f5ede0;--cream:#fdf8f0;--gold:#c9973a;--gold2:#e8b84b;
-  --accent:#b5451b;--green:#1a6b3a;--white:#fffef9;
-  --border:1px solid rgba(201,151,58,0.25);
+  --primary:#8B2FC9;
+  --primary-dark:#6a1fa0;
+  --accent:#FFD700;
+  --accent2:#ff6b6b;
+  --bg:#0d0d1a;
+  --bg2:#12122a;
+  --bg3:#1a1a35;
+  --card:rgba(255,255,255,0.05);
+  --card-hover:rgba(255,255,255,0.09);
+  --border:rgba(139,47,201,0.25);
+  --border2:rgba(255,255,255,0.08);
+  --text:#e8deff;
+  --text2:#a090c0;
+  --success:#4caf50;
+  --error:#f44336;
+  --warning:#ff9800;
+  --radius:14px;
+  --radius-sm:8px;
+  --shadow:0 8px 32px rgba(139,47,201,0.2);
+  --transition:all 0.25s ease;
+  --font:'Poppins',sans-serif;
+  --sidebar-w:240px;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;background:#ede5d8;color:var(--ink);min-height:100vh}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--warm),#4a2d10)}
-.login-box{background:var(--white);border-radius:24px;padding:46px 38px;width:min(400px,92vw);text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.3)}
-.login-icon{font-size:3rem;margin-bottom:14px}
-.login-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--warm);margin-bottom:5px}
-.login-sub{font-size:.85rem;color:var(--mid);margin-bottom:24px}
-.login-err{background:rgba(181,69,27,.1);border:1px solid rgba(181,69,27,.35);color:var(--accent);padding:10px 14px;border-radius:10px;font-size:.82rem;margin-bottom:12px;display:none}
-.login-err.show{display:block}
-.login-inp{width:100%;padding:12px 16px;border:var(--border);border-radius:12px;background:var(--pale);font-family:'DM Sans',sans-serif;font-size:.95rem;margin-bottom:12px;outline:none;transition:border-color .2s}
-.login-inp:focus{border-color:var(--gold)}
-.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#b8832a);color:white;border:none;border-radius:50px;font-weight:700;font-size:1rem;cursor:pointer;transition:all .3s}
-.login-btn:hover{transform:translateY(-2px)}
-.app{display:none;min-height:100vh}
-.app.show{display:flex}
-.sidebar{width:240px;background:var(--warm);color:white;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:100;overflow-y:auto;transition:transform .3s}
-.sb-brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
-.sb-icon{font-size:1.6rem}
-.sb-name{font-family:'Playfair Display',serif;font-size:.9rem;color:rgba(253,248,240,.95);line-height:1.3}
-.sb-sub{font-size:.66rem;color:rgba(253,248,240,.45);margin-top:2px}
-.sb-nav{flex:1;padding:10px 0}
-.sb-group{padding:6px 16px 2px;font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(253,248,240,.3);margin-top:4px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:10px 16px;color:rgba(253,248,240,.7);cursor:pointer;transition:all .2s;font-size:.84rem;font-weight:500;border:none;background:none;width:100%;text-align:left;border-left:3px solid transparent}
-.nav-item:hover{background:rgba(255,255,255,.08);color:white}
-.nav-item.active{background:rgba(201,151,58,.2);color:var(--gold2);border-left-color:var(--gold)}
-.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1)}
-.sb-status{font-size:.73rem;color:rgba(253,248,240,.45);margin-bottom:7px}
-.sb-logout{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(253,248,240,.7);padding:7px 12px;border-radius:50px;cursor:pointer;font-size:.77rem;width:100%;transition:all .2s}
-.sb-logout:hover{background:rgba(255,255,255,.18);color:white}
-.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:var(--white);border-bottom:var(--border);padding:0 22px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:10px}
-.topbar-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--warm)}
-.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.mob-toggle{display:none;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--warm)}
-.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:50px;font-size:.74rem;font-weight:600;white-space:nowrap}
-.chip-g{background:rgba(26,107,58,.1);border:1px solid rgba(26,107,58,.3);color:var(--green)}
-.chip-y{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#b45309}
-.chip-r{background:rgba(181,69,27,.1);border:1px solid rgba(181,69,27,.3);color:var(--accent)}
-.dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
-.dot-spin{animation:blink 1s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.btn-prev{background:var(--pale);border:var(--border);color:var(--mid);padding:6px 13px;border-radius:50px;font-size:.79rem;cursor:pointer;text-decoration:none;transition:all .2s}
-.btn-prev:hover{background:var(--warm);color:white}
-.btn-pub{border:none;padding:8px 16px;border-radius:50px;font-weight:700;font-size:.84rem;cursor:pointer;background:linear-gradient(135deg,#1a6b3a,#0f4d28);color:white;transition:all .2s}
-.btn-pub:hover{transform:translateY(-1px)}
-.btn-pub:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.content{padding:22px;flex:1}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
-.stat-card{background:var(--white);border-radius:13px;padding:16px;border:var(--border)}
-.stat-icon{font-size:1.4rem;margin-bottom:6px}
-.stat-num{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--warm)}
-.stat-lbl{font-size:.73rem;color:var(--light);margin-top:2px}
-.box{background:var(--white);border-radius:13px;border:var(--border);overflow:hidden;margin-bottom:18px;box-shadow:0 2px 8px rgba(26,16,8,.05)}
-.box-head{padding:13px 16px;border-bottom:var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--pale)}
-.box-title{font-family:'Playfair Display',serif;font-size:.92rem;color:var(--warm);font-weight:700}
-.box-body{padding:16px}
-.fl{display:block;font-size:.69rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
-.fi{width:100%;padding:9px 12px;border:var(--border);border-radius:9px;background:var(--pale);font-family:'DM Sans',sans-serif;font-size:.86rem;color:var(--ink);outline:none;transition:border-color .2s;margin-bottom:10px}
-.fi:focus{border-color:var(--gold)}
-textarea.fi{resize:vertical;min-height:64px}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
-.btn-add{background:linear-gradient(135deg,var(--gold),#b8832a);color:white;border:none;padding:9px 18px;border-radius:50px;font-weight:700;font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .2s}
-.btn-add:hover{transform:translateY(-1px)}
-.btn-full{width:100%;padding:12px;border-radius:50px;font-weight:700;font-size:.86rem;cursor:pointer;border:none;background:linear-gradient(135deg,var(--warm),#4a2d10);color:white;transition:all .2s;margin-top:4px}
-.btn-full:hover{transform:translateY(-1px)}
-.btn-del{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:5px 11px;border-radius:50px;font-size:.72rem;cursor:pointer;transition:all .2s}
-.btn-del:hover{background:var(--accent);color:white}
-.btn-edit{background:transparent;border:var(--border);color:var(--mid);padding:5px 11px;border-radius:50px;font-size:.72rem;cursor:pointer;transition:all .2s}
-.btn-edit:hover{background:var(--pale);border-color:var(--gold);color:var(--gold)}
-.rows-list{display:flex;flex-direction:column;gap:8px}
-.row-item{display:flex;align-items:center;gap:10px;padding:10px;border:var(--border);border-radius:9px;background:var(--cream);transition:all .2s}
-.row-item:hover{border-color:var(--gold);background:var(--white)}
-.row-thumb{width:46px;height:52px;border-radius:7px;overflow:hidden;background:var(--pale);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;border:var(--border)}
-.row-thumb img{width:100%;height:100%;object-fit:cover}
-.row-info{flex:1;min-width:0}
-.row-name{font-weight:600;font-size:.84rem;color:var(--warm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row-meta{font-size:.72rem;color:var(--light);margin-top:2px}
-.row-actions{display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap}
-.alert{border-radius:11px;padding:13px;margin-bottom:13px;font-size:.82rem;line-height:1.7}
-.alert-g{background:rgba(26,107,58,.06);border:1px solid rgba(26,107,58,.25);color:#0f4d28}
-.alert-y{background:rgba(201,151,58,.08);border:var(--border);color:var(--mid)}
-.alert-r{background:rgba(181,69,27,.06);border:1px solid rgba(181,69,27,.25);color:#7a2010}
-.alert code{background:rgba(0,0,0,.07);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:.81rem}
-.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px}
-.quick-btn{background:var(--pale);border:var(--border);border-radius:11px;padding:14px;cursor:pointer;transition:all .2s;text-align:center;width:100%}
-.quick-btn:hover{background:var(--gold);color:white;transform:translateY(-2px)}
-.quick-icon{font-size:1.6rem;margin-bottom:6px}
-.quick-name{font-size:.81rem;font-weight:600}
-.toast{position:fixed;bottom:22px;right:22px;z-index:9999;padding:12px 16px;border-radius:11px;font-size:.85rem;font-weight:600;transform:translateY(80px);opacity:0;transition:all .4s;max-width:280px;pointer-events:none}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{background:#1a6b3a;color:white}
-.toast.err{background:var(--accent);color:white}
-.toast.info{background:var(--warm);color:white}
-.color-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.swatch{width:42px;height:42px;border-radius:8px;border:var(--border);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0}
-.swatch input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.presets{display:flex;gap:6px;flex-wrap:wrap}
-.preset{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s}
-.preset:hover{transform:scale(1.15);border-color:var(--gold)}
-.codebox{background:#1a1008;color:#86efac;border-radius:9px;padding:14px;font-family:monospace;font-size:.86rem;line-height:1.8;margin:9px 0;position:relative}
-.codebox pre{white-space:pre-wrap;word-break:break-all}
-.copy-btn{position:absolute;top:8px;right:8px;background:rgba(134,239,172,.15);border:1px solid rgba(134,239,172,.3);color:#86efac;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:.73rem}
-.copy-btn:hover{background:rgba(134,239,172,.3)}
-.test-res{border-radius:11px;padding:13px;margin-top:11px;font-size:.87rem;font-weight:600;display:none}
-.test-res.show{display:block}
-.test-res.ok{background:#dcfce7;border:1px solid #86efac;color:#14532d}
-.test-res.fail{background:#fef2f2;border:1px solid #fca5a5;color:#7f1d1d}
-.btn-test{padding:11px 22px;border-radius:50px;font-weight:700;font-size:.88rem;cursor:pointer;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;transition:all .2s}
-.btn-test:hover{transform:translateY(-2px)}
-.font-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.font-card{border:2px solid var(--pale);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;text-align:center}
-.font-card:hover,.font-card.active{border-color:var(--gold);background:rgba(201,151,58,.06)}
-@media(max-width:768px){
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:var(--font);border:none;outline:none}
+img{max-width:100%;display:block}
+input,textarea,select{font-family:var(--font)}
+
+/* ============================================================
+   LOGIN SCREEN
+   ============================================================ */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0d0d1a,#1a0a2e);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.login-box{
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:48px 40px;
+  width:100%;max-width:400px;
+  backdrop-filter:blur(20px);
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.login-icon{font-size:3rem;margin-bottom:8px}
+.login-box h2{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.login-sub{color:var(--text2);font-size:0.85rem;margin-bottom:32px}
+.login-input{
+  width:100%;padding:14px 18px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);font-size:0.95rem;
+  outline:none;transition:var(--transition);
+  margin-bottom:14px;
+}
+.login-input:focus{border-color:var(--primary)}
+.login-btn{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;border-radius:var(--radius-sm);
+  font-size:1rem;font-weight:700;
+  transition:var(--transition);
+}
+.login-btn:hover{opacity:0.9;transform:translateY(-1px)}
+.login-error{
+  background:rgba(244,67,54,0.1);
+  border:1px solid rgba(244,67,54,0.3);
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:0.82rem;color:#f44336;
+  margin-bottom:14px;display:none;
+}
+.login-error.show{display:block}
+
+/* ============================================================
+   ADMIN LAYOUT
+   ============================================================ */
+#admin-app{display:none;min-height:100vh}
+#admin-app.open{display:flex}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--bg2);
+  border-right:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;
+  z-index:100;
+  transition:transform 0.3s ease;
+}
+@media(max-width:900px){
   .sidebar{transform:translateX(-100%)}
   .sidebar.open{transform:translateX(0)}
-  .main{margin-left:0}
-  .mob-toggle{display:block}
-  .f2,.f3{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:1fr 1fr}
-  .topbar-right{gap:5px}
 }
+.sidebar-logo{
+  padding:24px 20px;
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:10px;
+}
+.sidebar-logo-icon{font-size:1.8rem}
+.sidebar-logo-text{font-size:0.9rem;font-weight:700;line-height:1.3}
+.sidebar-logo-sub{font-size:0.7rem;color:var(--text2)}
+.sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+.nav-section-label{
+  font-size:0.65rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.12em;
+  color:var(--text2);padding:12px 10px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;
+  border-radius:var(--radius-sm);
+  font-size:0.85rem;font-weight:500;
+  color:var(--text2);
+  cursor:pointer;
+  transition:var(--transition);
+  margin-bottom:2px;
+  position:relative;
+}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(139,47,201,0.25),rgba(139,47,201,0.1));
+  color:var(--text);
+  border-left:3px solid var(--primary);
+}
+.nav-item i{width:18px;text-align:center;font-size:0.9rem}
+.nav-badge{
+  margin-left:auto;
+  background:var(--accent2);
+  color:#fff;
+  font-size:0.62rem;font-weight:700;
+  padding:2px 6px;border-radius:50px;
+}
+.sidebar-footer{
+  padding:16px;
+  border-top:1px solid var(--border2);
+}
+.sidebar-user{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;
+  border-radius:var(--radius-sm);
+  background:var(--card);
+  margin-bottom:8px;
+}
+.sidebar-avatar{
+  width:34px;height:34px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.8rem;font-weight:700;
+}
+.sidebar-user-info{font-size:0.78rem;font-weight:600}
+.sidebar-user-role{font-size:0.68rem;color:var(--text2)}
+.logout-btn{
+  width:100%;padding:10px;
+  background:rgba(244,67,54,0.1);
+  border:1px solid rgba(244,67,54,0.2);
+  border-radius:var(--radius-sm);
+  color:#f44336;
+  font-size:0.82rem;font-weight:600;
+  transition:var(--transition);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.logout-btn:hover{background:rgba(244,67,54,0.2)}
+
+/* Main Content */
+.main-content{
+  flex:1;
+  margin-left:var(--sidebar-w);
+  min-height:100vh;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+}
+@media(max-width:900px){.main-content{margin-left:0}}
+
+/* Top bar */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(13,13,26,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border2);
+  padding:0 24px;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;
+}
+.topbar-menu-btn{
+  width:36px;height:36px;
+  border-radius:8px;
+  background:var(--card);
+  border:1px solid var(--border2);
+  color:var(--text);
+  display:none;
+  align-items:center;justify-content:center;
+  font-size:1rem;
+}
+@media(max-width:900px){.topbar-menu-btn{display:flex}}
+.topbar-title{font-size:1.1rem;font-weight:700;flex:1}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.topbar-btn{
+  padding:8px 16px;
+  border-radius:var(--radius-sm);
+  background:var(--card);
+  border:1px solid var(--border2);
+  color:var(--text);
+  font-size:0.82rem;font-weight:500;
+  transition:var(--transition);
+  display:flex;align-items:center;gap:6px;
+}
+.topbar-btn:hover{background:var(--primary);border-color:var(--primary)}
+.topbar-status{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.78rem;color:var(--text2);
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--success);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* Page container */
+.page-container{
+  padding:28px 24px;
+  flex:1;
+  max-width:1200px;
+  width:100%;
+}
+
+/* Tabs */
+.admin-section{display:none}
+.admin-section.active{display:block}
+
+/* ============================================================
+   DASHBOARD STATS
+   ============================================================ */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px;
+  margin-bottom:28px;
+}
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:20px;
+  transition:var(--transition);
+}
+.stat-card:hover{background:var(--card-hover);transform:translateY(-2px)}
+.stat-icon{
+  width:44px;height:44px;
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;
+  margin-bottom:14px;
+}
+.stat-num{font-size:1.8rem;font-weight:700;color:var(--text);line-height:1}
+.stat-label{font-size:0.78rem;color:var(--text2);margin-top:4px;font-weight:500}
+.stat-change{
+  font-size:0.72rem;font-weight:600;
+  margin-top:8px;
+  display:flex;align-items:center;gap:4px;
+}
+.stat-up{color:var(--success)}
+.stat-down{color:var(--error)}
+
+/* ============================================================
+   SECTION HEADER
+   ============================================================ */
+.section-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+  margin-bottom:20px;
+}
+.section-hdr h2{font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.btn-primary{
+  padding:10px 20px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;border-radius:var(--radius-sm);
+  font-size:0.85rem;font-weight:600;
+  transition:var(--transition);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
+.btn-danger{
+  padding:8px 16px;
+  background:rgba(244,67,54,0.1);
+  border:1px solid rgba(244,67,54,0.3);
+  color:#f44336;
+  border-radius:var(--radius-sm);
+  font-size:0.8rem;font-weight:600;
+  transition:var(--transition);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn-danger:hover{background:rgba(244,67,54,0.2)}
+.btn-edit{
+  padding:8px 14px;
+  background:rgba(139,47,201,0.1);
+  border:1px solid rgba(139,47,201,0.3);
+  color:var(--primary);
+  border-radius:var(--radius-sm);
+  font-size:0.78rem;font-weight:600;
+  transition:var(--transition);
+  display:inline-flex;align-items:center;gap:5px;
+}
+.btn-edit:hover{background:rgba(139,47,201,0.2)}
+.btn-save{
+  padding:10px 24px;
+  background:linear-gradient(135deg,var(--success),#388e3c);
+  color:#fff;border-radius:var(--radius-sm);
+  font-size:0.9rem;font-weight:700;
+  transition:var(--transition);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn-save:hover{opacity:0.9;transform:translateY(-1px)}
+
+/* ============================================================
+   FORM COMPONENTS
+   ============================================================ */
+.form-card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:20px;
+}
+.form-card h3{
+  font-size:0.95rem;font-weight:700;
+  margin-bottom:20px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:8px;
+}
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-group{margin-bottom:16px}
+.form-group label{
+  display:block;
+  font-size:0.75rem;font-weight:600;
+  color:var(--text2);
+  text-transform:uppercase;letter-spacing:0.06em;
+  margin-bottom:6px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select{
+  width:100%;
+  padding:11px 14px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  color:var(--text);font-size:0.88rem;
+  outline:none;transition:var(--transition);
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus{border-color:var(--primary)}
+.form-group input[type="file"]{padding:8px 14px}
+.img-preview-wrap{
+  margin-top:10px;
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  background:rgba(255,255,255,0.03);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100px;
+  position:relative;
+}
+.img-preview-wrap img{
+  max-height:160px;
+  object-fit:contain;
+}
+.img-hint{
+  font-size:0.75rem;color:var(--text2);
+  padding:12px;text-align:center;
+}
+.hint{
+  font-size:0.72rem;color:var(--text2);
+  margin-top:4px;
+  display:flex;align-items:center;gap:4px;
+}
+.form-group select option{background:#1a1a35}
+.toggle-wrap{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;
+}
+.toggle{
+  width:44px;height:24px;
+  background:var(--border2);
+  border-radius:12px;
+  position:relative;cursor:pointer;
+  transition:var(--transition);
+  flex-shrink:0;
+}
+.toggle.on{background:var(--success)}
+.toggle::after{
+  content:'';
+  position:absolute;
+  top:3px;left:3px;
+  width:18px;height:18px;
+  border-radius:50%;
+  background:#fff;
+  transition:var(--transition);
+}
+.toggle.on::after{left:23px}
+.toggle-label{font-size:0.85rem;font-weight:500}
+
+/* ============================================================
+   PRODUCTS TABLE / GRID
+   ============================================================ */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border2)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--bg3)}
+th{
+  padding:12px 16px;
+  font-size:0.75rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.06em;
+  color:var(--text2);
+  text-align:left;
+  white-space:nowrap;
+}
+td{
+  padding:12px 16px;
+  font-size:0.85rem;
+  color:var(--text);
+  border-top:1px solid var(--border2);
+  vertical-align:middle;
+}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.td-img{
+  width:52px;height:52px;
+  border-radius:8px;object-fit:cover;
+  border:1px solid var(--border2);
+  background:var(--bg3);
+}
+.badge{
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:50px;
+  font-size:0.7rem;font-weight:600;
+}
+.badge-green{background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.3);color:var(--success)}
+.badge-red{background:rgba(244,67,54,0.15);border:1px solid rgba(244,67,54,0.3);color:var(--error)}
+.badge-yellow{background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.3);color:var(--warning)}
+.badge-purple{background:rgba(139,47,201,0.15);border:1px solid rgba(139,47,201,0.3);color:var(--primary)}
+.table-actions{display:flex;gap:6px;align-items:center}
+
+/* ============================================================
+   ORDERS
+   ============================================================ */
+.order-card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:14px;
+  transition:var(--transition);
+}
+.order-card:hover{background:var(--card-hover)}
+.order-hdr{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+  margin-bottom:14px;
+}
+.order-id{font-size:0.75rem;color:var(--text2);font-weight:600}
+.order-name{font-size:1rem;font-weight:700}
+.order-meta{
+  display:flex;flex-wrap:wrap;gap:16px;
+  font-size:0.82rem;color:var(--text2);
+}
+.order-meta span{display:flex;align-items:center;gap:5px}
+.order-meta i{color:var(--primary)}
+.order-items-list{
+  background:rgba(255,255,255,0.03);
+  border-radius:var(--radius-sm);
+  padding:12px;
+  margin:12px 0;
+  font-size:0.82rem;color:var(--text2);
+}
+.order-status-row{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.status-select{
+  padding:7px 12px;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  color:var(--text);font-size:0.82rem;
+  outline:none;cursor:pointer;
+}
+
+/* ============================================================
+   REVIEWS ADMIN
+   ============================================================ */
+.review-admin-card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:12px;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.review-admin-info{flex:1}
+.review-admin-name{font-size:0.9rem;font-weight:600;margin-bottom:2px}
+.review-admin-stars{color:var(--accent);font-size:0.8rem;margin-bottom:4px}
+.review-admin-text{font-size:0.82rem;color:var(--text2);line-height:1.5}
+
+/* ============================================================
+   SETTINGS TABS
+   ============================================================ */
+.settings-tabs{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-bottom:24px;
+}
+.settings-tab{
+  padding:8px 18px;
+  border-radius:50px;
+  border:1px solid var(--border2);
+  background:var(--card);
+  color:var(--text2);font-size:0.82rem;font-weight:500;
+  cursor:pointer;transition:var(--transition);
+}
+.settings-tab.active{
+  background:var(--primary);
+  border-color:var(--primary);
+  color:#fff;
+}
+.settings-pane{display:none}
+.settings-pane.active{display:block}
+
+/* ============================================================
+   BANNER PREVIEW
+   ============================================================ */
+.banner-preview{
+  border-radius:var(--radius);
+  overflow:hidden;
+  border:1px solid var(--border2);
+  position:relative;
+  min-height:140px;
+  background:var(--bg3);
+  margin-top:10px;
+  display:flex;align-items:center;justify-content:center;
+}
+.banner-preview img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+}
+.banner-preview-empty{
+  font-size:0.82rem;color:var(--text2);
+  display:flex;align-items:center;gap:8px;flex-direction:column;
+  padding:30px;
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:5000;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  width:100%;max-width:600px;
+  max-height:90vh;overflow-y:auto;
+  padding:28px;
+  position:relative;
+}
+.modal-box h3{font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.modal-close{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;
+  border-radius:50%;
+  background:var(--card);
+  border:1px solid var(--border2);
+  color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.85rem;cursor:pointer;
+  transition:var(--transition);
+}
+.modal-close:hover{background:var(--accent2)}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast-container{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+}
+.toast{
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  padding:12px 18px;
+  font-size:0.85rem;color:var(--text);
+  display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow);
+  animation:toastIn 0.3s ease;
+  pointer-events:auto;max-width:280px;
+}
+.toast.success{border-left:3px solid var(--success)}
+.toast.error{border-left:3px solid var(--error)}
+.toast.info{border-left:3px solid var(--primary)}
+.toast i{font-size:1rem}
+.toast.success i{color:var(--success)}
+.toast.error i{color:var(--error)}
+.toast.info i{color:var(--primary)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--text2);
+}
+.empty-state i{font-size:3rem;margin-bottom:16px;display:block;color:var(--border2)}
+.save-bar{
+  position:sticky;bottom:0;
+  background:rgba(13,13,26,0.97);
+  border-top:1px solid var(--border2);
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:flex-end;gap:12px;
+  backdrop-filter:blur(10px);
+}
+.saved-indicator{
+  font-size:0.82rem;color:var(--success);
+  display:flex;align-items:center;gap:6px;
+  display:none;
+}
+.saved-indicator.show{display:flex}
+.char-count{font-size:0.7rem;color:var(--text2);text-align:right;margin-top:2px}
+.connecting-bar{
+  background:var(--bg3);border-bottom:1px solid var(--border2);
+  padding:8px 24px;font-size:0.78rem;color:var(--text2);
+  display:flex;align-items:center;gap:8px;
+}
+.spinner{
+  width:14px;height:14px;
+  border:2px solid var(--border2);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.search-admin{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  padding:8px 14px;
+  margin-bottom:16px;
+}
+.search-admin input{
+  background:none;border:none;
+  color:var(--text);font-size:0.85rem;
+  outline:none;flex:1;
+}
+.search-admin i{color:var(--text2)}
+.overlay-sidebar{
+  position:fixed;inset:0;z-index:99;
+  background:rgba(0,0,0,0.5);
+  display:none;
+}
+.overlay-sidebar.show{display:block}
 </style>
 </head>
 <body>
 
-<div class="toast" id="toast"></div>
-
-<!-- LOGIN -->
-<div class="login-wrap" id="loginWrap">
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="login-screen">
   <div class="login-box">
     <div class="login-icon">🐦</div>
-    <div class="login-title">Admin Login</div>
-    <div class="login-sub">Bluebirds Gift House — Akot</div>
-    <div class="login-err" id="loginErr">❌ Wrong password. Try again.</div>
-    <input class="login-inp" type="password" id="loginPwd" placeholder="Enter admin password">
-    <button class="login-btn" id="loginBtn">🔓 Login</button>
+    <h2>Admin Login</h2>
+    <p class="login-sub">Bluebirds Gift House — Akot</p>
+    <div class="login-error" id="login-error">❌ Wrong password. Try again.</div>
+    <input class="login-input" type="text" id="admin-user" placeholder="Username" autocomplete="off"/>
+    <input class="login-input" type="password" id="admin-pass" placeholder="Password"/>
+    <button class="login-btn" onclick="doAdminLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
   </div>
 </div>
 
-<!-- APP -->
-<div class="app" id="appWrap">
-  <div class="sidebar" id="sidebar">
-    <div class="sb-brand">
-      <span class="sb-icon">🐦</span>
-      <div><div class="sb-name">Bluebirds Gift House</div><div class="sb-sub">Admin · Akot</div></div>
+<!-- Sidebar overlay for mobile -->
+<div class="overlay-sidebar" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ==================== ADMIN APP ==================== -->
+<div id="admin-app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🐦</div>
+      <div>
+        <div class="sidebar-logo-text" id="sl-name">Bluebirds</div>
+        <div class="sidebar-logo-sub">Admin Panel</div>
+      </div>
     </div>
-    <nav class="sb-nav">
-      <div class="sb-group">STORE</div>
-      <button class="nav-item active" data-page="dash">📊 Dashboard</button>
-      <button class="nav-item" data-page="prods">🖼️ Products</button>
-      <button class="nav-item" data-page="cats">🏷️ Categories</button>
-      <button class="nav-item" data-page="revs">⭐ Reviews</button>
-      <button class="nav-item" data-page="wraps">🎁 Gift Wrapping</button>
-      <div class="sb-group">CONTENT</div>
-      <button class="nav-item" data-page="hero">🌟 Hero Banner</button>
-      <button class="nav-item" data-page="biz">🏪 Business Info</button>
-      <div class="sb-group">DESIGN</div>
-      <button class="nav-item" data-page="colors">🎨 Colors</button>
-      <button class="nav-item" data-page="fonts">✍️ Fonts</button>
-      <div class="sb-group">TOOLS</div>
-      <button class="nav-item" data-page="deploy">🚀 Links</button>
-      <button class="nav-item" data-page="fixfb">🔧 Fix Firebase</button>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <div class="nav-item active" onclick="showSection('dashboard',this)">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </div>
+      <div class="nav-section-label">Store</div>
+      <div class="nav-item" onclick="showSection('products',this)">
+        <i class="fas fa-box-open"></i> Products
+      </div>
+      <div class="nav-item" onclick="showSection('categories',this)">
+        <i class="fas fa-tags"></i> Categories
+      </div>
+      <div class="nav-item" onclick="showSection('orders',this)">
+        <i class="fas fa-shopping-bag"></i> Orders
+        <span class="nav-badge" id="pending-badge" style="display:none">0</span>
+      </div>
+      <div class="nav-section-label">Content</div>
+      <div class="nav-item" onclick="showSection('banner',this)">
+        <i class="fas fa-image"></i> Banner & Hero
+      </div>
+      <div class="nav-item" onclick="showSection('reviews',this)">
+        <i class="fas fa-star"></i> Reviews
+      </div>
+      <div class="nav-item" onclick="showSection('features',this)">
+        <i class="fas fa-medal"></i> Features
+      </div>
+      <div class="nav-section-label">Configuration</div>
+      <div class="nav-item" onclick="showSection('settings',this)">
+        <i class="fas fa-cog"></i> Settings
+      </div>
+      <div class="nav-item" onclick="showSection('policies',this)">
+        <i class="fas fa-file-alt"></i> Policies
+      </div>
     </nav>
-    <div class="sb-footer">
-      <div class="sb-status" id="sbStatus">⏳ Connecting...</div>
-      <button class="sb-logout" id="logoutBtn">🚪 Logout</button>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">A</div>
+        <div>
+          <div class="sidebar-user-info">Admin</div>
+          <div class="sidebar-user-role">Owner</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doAdminLogout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
     </div>
-  </div>
+  </aside>
 
-  <div class="main">
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <!-- Topbar -->
     <div class="topbar">
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="mob-toggle" id="mobToggle">☰</button>
-        <div class="topbar-title" id="pageTitle">Dashboard</div>
-      </div>
-      <div class="topbar-right">
-        <div class="chip chip-y" id="fbChip"><span class="dot dot-spin"></span><span id="fbChipTxt">Connecting…</span></div>
-        <a href="index.html" target="_blank" class="btn-prev">👁️ View Site</a>
-        <button class="btn-pub" id="publishBtn">☁️ Save &amp; Publish</button>
+      <button class="topbar-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <div class="topbar-status">
+          <span class="status-dot" id="fb-status-dot" style="background:var(--warning)"></span>
+          <span id="fb-status-text">Connecting…</span>
+        </div>
+        <a href="index.html" target="_blank" class="topbar-btn">
+          <i class="fas fa-external-link-alt"></i> View Site
+        </a>
       </div>
     </div>
-    <div class="content" id="pageContent"></div>
+
+    <div class="page-container" id="page-container">
+
+      <!-- ============ DASHBOARD ============ -->
+      <div class="admin-section active" id="section-dashboard">
+        <div class="section-hdr">
+          <h2><i class="fas fa-tachometer-alt" style="color:var(--primary)"></i> Dashboard Overview</h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(139,47,201,0.15)">📦</div>
+            <div class="stat-num" id="dash-products">0</div>
+            <div class="stat-label">Total Products</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(255,152,0,0.15)">🛍️</div>
+            <div class="stat-num" id="dash-orders">0</div>
+            <div class="stat-label">Total Orders</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(76,175,80,0.15)">⏳</div>
+            <div class="stat-num" id="dash-pending">0</div>
+            <div class="stat-label">Pending Orders</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(255,215,0,0.15)">⭐</div>
+            <div class="stat-num" id="dash-reviews">0</div>
+            <div class="stat-label">Reviews</div>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="form-card">
+          <h3><i class="fas fa-clock" style="color:var(--accent)"></i> Recent Orders</h3>
+          <div id="dash-recent-orders">
+            <div class="empty-state"><i class="fas fa-box"></i><p>No orders yet</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PRODUCTS ============ -->
+      <div class="admin-section" id="section-products">
+        <div class="section-hdr">
+          <h2><i class="fas fa-box-open" style="color:var(--primary)"></i> Products</h2>
+          <button class="btn-primary" onclick="openProductModal()">
+            <i class="fas fa-plus"></i> Add Product
+          </button>
+        </div>
+        <div class="search-admin">
+          <i class="fas fa-search"></i>
+          <input type="text" id="product-search" placeholder="Search products..." oninput="renderProductsTable()"/>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Original</th>
+                <th>Rating</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ CATEGORIES ============ -->
+      <div class="admin-section" id="section-categories">
+        <div class="section-hdr">
+          <h2><i class="fas fa-tags" style="color:var(--primary)"></i> Categories</h2>
+          <button class="btn-primary" onclick="openCatModal()">
+            <i class="fas fa-plus"></i> Add Category
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Icon</th>
+                <th>Name</th>
+                <th>Products</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cats-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ ORDERS ============ -->
+      <div class="admin-section" id="section-orders">
+        <div class="section-hdr">
+          <h2><i class="fas fa-shopping-bag" style="color:var(--primary)"></i> Orders</h2>
+          <select class="btn-edit" id="orders-filter" onchange="renderOrders()" style="cursor:pointer">
+            <option value="all">All Orders</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div id="orders-list">
+          <div class="empty-state"><i class="fas fa-box"></i><p>No orders yet</p></div>
+        </div>
+      </div>
+
+      <!-- ============ BANNER & HERO ============ -->
+      <div class="admin-section" id="section-banner">
+        <div class="section-hdr">
+          <h2><i class="fas fa-image" style="color:var(--primary)"></i> Banner & Hero</h2>
+        </div>
+        <div class="form-card">
+          <h3><i class="fas fa-image"></i> Site Background / Banner Image</h3>
+          <div class="form-group">
+            <label>Banner Image URL (ImgBB or any direct link)</label>
+            <input type="url" id="s-bannerImage" placeholder="[i.ibb.co](https://i.ibb.co/your-image.jpg)"
+              oninput="previewBanner()"/>
+            <div class="hint"><i class="fas fa-info-circle"></i> Upload to imgbb.com and paste the direct image URL here</div>
+          </div>
+          <div class="banner-preview" id="banner-preview">
+            <div class="banner-preview-empty"><i class="fas fa-image" style="font-size:2rem;color:var(--border2)"></i><span>Banner preview will appear here</span></div>
+          </div>
+        </div>
+        <div class="form-card">
+          <h3><i class="fas fa-heading"></i> Hero Section Text</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Hero Badge Text</label>
+              <input type="text" id="s-heroBadge" placeholder="Premium Gift Store in Akot"/>
+            </div>
+            <div class="form-group">
+              <label>Hero Button 1 Text</label>
+              <input type="text" id="s-heroBtn1" placeholder="🛍️ Shop Now"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Hero Title (HTML supported)</label>
+            <input type="text" id="s-heroTitle" placeholder="The Perfect Gift for Every Occasion"/>
+          </div>
+          <div class="form-group">
+            <label>Hero Description</label>
+            <textarea id="s-heroDesc" rows="2" placeholder="Premium photo frames, books & gifts with free home delivery in Akot."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Hero Button 2 Text</label>
+              <input type="text" id="s-heroBtn2" placeholder="💬 Contact Us"/>
+            </div>
+          </div>
+        </div>
+        <div class="form-card">
+          <h3><i class="fas fa-chart-bar"></i> Hero Stats</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Products Stat</label>
+              <input type="text" id="s-statProducts" placeholder="50+"/>
+            </div>
+            <div class="form-group">
+              <label>Customers Stat</label>
+              <input type="text" id="s-statCustomers" placeholder="500+"/>
+            </div>
+            <div class="form-group">
+              <label>Years Stat</label>
+              <input type="text" id="s-statYears" placeholder="5+"/>
+            </div>
+            <div class="form-group">
+              <label>Rating Stat</label>
+              <input type="text" id="s-statRating" placeholder="4.8★"/>
+            </div>
+          </div>
+        </div>
+        <div class="save-bar">
+          <span class="saved-indicator" id="banner-saved"><i class="fas fa-check-circle"></i> Saved!</span>
+          <button class="btn-save" onclick="saveBannerSettings()">
+            <i class="fas fa-save"></i> Save Banner & Hero
+          </button>
+        </div>
+      </div>
+
+      <!-- ============ REVIEWS ============ -->
+      <div class="admin-section" id="section-reviews">
+        <div class="section-hdr">
+          <h2><i class="fas fa-star" style="color:var(--primary)"></i> Customer Reviews</h2>
+          <button class="btn-primary" onclick="openReviewModal()">
+            <i class="fas fa-plus"></i> Add Review
+          </button>
+        </div>
+        <div id="reviews-list">
+          <div class="empty-state"><i class="fas fa-star"></i><p>No reviews yet</p></div>
+        </div>
+      </div>
+
+      <!-- ============ FEATURES ============ -->
+      <div class="admin-section" id="section-features">
+        <div class="section-hdr">
+          <h2><i class="fas fa-medal" style="color:var(--primary)"></i> Why Choose Us (Features)</h2>
+          <button class="btn-primary" onclick="openFeatureModal()">
+            <i class="fas fa-plus"></i> Add Feature
+          </button>
+        </div>
+        <div id="features-list">
+          <div class="empty-state"><i class="fas fa-medal"></i><p>No features yet</p></div>
+        </div>
+      </div>
+
+      <!-- ============ SETTINGS ============ -->
+      <div class="admin-section" id="section-settings">
+        <div class="section-hdr">
+          <h2><i class="fas fa-cog" style="color:var(--primary)"></i> Site Settings</h2>
+        </div>
+        <div class="settings-tabs">
+          <button class="settings-tab active" onclick="showSettingsPane('general',this)">General</button>
+          <button class="settings-tab" onclick="showSettingsPane('contact',this)">Contact</button>
+          <button class="settings-tab" onclick="showSettingsPane('payment',this)">Payment</button>
+          <button class="settings-tab" onclick="showSettingsPane('social',this)">Social</button>
+          <button class="settings-tab" onclick="showSettingsPane('about',this)">About</button>
+          <button class="settings-tab" onclick="showSettingsPane('security',this)">Security</button>
+        </div>
+
+        <!-- General -->
+        <div class="settings-pane active" id="sp-general">
+          <div class="form-card">
+            <h3><i class="fas fa-store"></i> Business Info</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Site / Store Name</label>
+                <input type="text" id="s-siteName" placeholder="Bluebirds Gift House"/>
+              </div>
+              <div class="form-group">
+                <label>Site Tagline</label>
+                <input type="text" id="s-tagline" placeholder="Akot's Favourite Gift Store"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Footer Physical Items Line</label>
+              <input type="text" id="s-footerPhysical" placeholder="We sell physical gift items only"/>
+              <div class="hint"><i class="fas fa-info-circle"></i> Shown in footer and top bar for compliance</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="settings-pane" id="sp-contact">
+          <div class="form-card">
+            <h3><i class="fas fa-phone"></i> Contact Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Phone / WhatsApp</label>
+                <input type="text" id="s-phone" placeholder="+91 98765 43210"/>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="s-email" placeholder="bluebirdsofakot@gmail.com"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Shop Address</label>
+              <textarea id="s-address" rows="2" placeholder="Bluebirds Gift House, Akot, Washim District, Maharashtra — 444101"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Business Hours</label>
+              <input type="text" id="s-hours" placeholder="Mon–Sat: 9AM–8PM | Sun: 10AM–6PM"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="settings-pane" id="sp-payment">
+          <div class="form-card">
+            <h3><i class="fas fa-qrcode"></i> Payment / UPI Settings</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>UPI ID</label>
+                <input type="text" id="s-upiId" placeholder="yourupi@bank"/>
+              </div>
+              <div class="form-group">
+                <label>UPI QR Code Image URL (ImgBB)</label>
+                <input type="url" id="s-upiQr" placeholder="[i.ibb.co](https://i.ibb.co/your-qr.jpg)" oninput="previewUpiQr()"/>
+              </div>
+            </div>
+            <div class="img-preview-wrap" id="upi-qr-preview">
+              <div class="banner-preview-empty"><i class="fas fa-qrcode" style="font-size:2rem"></i><span>QR preview</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social -->
+        <div class="settings-pane" id="sp-social">
+          <div class="form-card">
+            <h3><i class="fas fa-share-alt"></i> Social Media Links</h3>
+            <div class="form-group">
+              <label>Facebook URL</label>
+              <input type="url" id="s-fbUrl" placeholder="[facebook.com](https://facebook.com/bluebirds)"/>
+            </div>
+            <div class="form-group">
+              <label>Instagram URL</label>
+              <input type="url" id="s-igUrl" placeholder="[instagram.com](https://instagram.com/bluebirds)"/>
+            </div>
+            <div class="form-group">
+              <label>WhatsApp URL</label>
+              <input type="url" id="s-waUrl" placeholder="[wa.me](https://wa.me/919876543210)"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="settings-pane" id="sp-about">
+          <div class="form-card">
+            <h3><i class="fas fa-info-circle"></i> About Section</h3>
+            <div class="form-group">
+              <label>About Text (HTML supported)</label>
+              <textarea id="s-aboutText" rows="4" placeholder="Welcome to Bluebirds Gift House..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>About Text 2 (Second paragraph)</label>
+              <textarea id="s-aboutText2" rows="3" placeholder="Second paragraph..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security -->
+        <div class="settings-pane" id="sp-security">
+          <div class="form-card">
+            <h3><i class="fas fa-lock"></i> Admin Password</h3>
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="s-newpass" placeholder="Enter new password"/>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input type="password" id="s-confirmpass" placeholder="Confirm new password"/>
+            </div>
+            <button class="btn-primary" onclick="changeAdminPassword()" style="margin-top:4px">
+              <i class="fas fa-lock"></i> Update Password
+            </button>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <span class="saved-indicator" id="settings-saved"><i class="fas fa-check-circle"></i> Settings Saved!</span>
+          <button class="btn-save" onclick="saveAllSettings()">
+            <i class="fas fa-save"></i> Save All Settings
+          </button>
+        </div>
+      </div>
+
+      <!-- ============ POLICIES ============ -->
+      <div class="admin-section" id="section-policies">
+        <div class="section-hdr">
+          <h2><i class="fas fa-file-alt" style="color:var(--primary)"></i> Policies</h2>
+        </div>
+        <div class="settings-tabs">
+          <button class="settings-tab active" onclick="showPolicyPane('privacy',this)">Privacy Policy</button>
+          <button class="settings-tab" onclick="showPolicyPane('terms',this)">Terms & Conditions</button>
+          <button class="settings-tab" onclick="showPolicyPane('refund',this)">Refund Policy</button>
+          <button class="settings-tab" onclick="showPolicyPane('shipping',this)">Shipping Policy</button>
+        </div>
+        <div class="form-card">
+          <!-- Privacy -->
+          <div class="settings-pane active" id="pol-privacy">
+            <div class="form-group">
+              <label>Who We Are (Privacy)</label>
+              <textarea id="p-ppWho" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Information We Collect</label>
+              <textarea id="p-ppCollect" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>How We Use Information</label>
+              <textarea id="p-ppUse" rows="3"></textarea>
+            </div>
+          </div>
+          <!-- Terms -->
+          <div class="settings-pane" id="pol-terms">
+            <div class="form-group">
+              <label>Acceptance</label>
+              <textarea id="p-tcAccept" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Products & Pricing</label>
+              <textarea id="p-tcProducts" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Governing Law</label>
+              <textarea id="p-tcLaw" rows="2"></textarea>
+            </div>
+          </div>
+          <!-- Refund -->
+          <div class="settings-pane" id="pol-refund">
+            <div class="form-group">
+              <label>Cancellation Policy</label>
+              <textarea id="p-refCancel" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Return Policy</label>
+              <textarea id="p-refReturn" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Refund Process</label>
+              <textarea id="p-refRefund" rows="3"></textarea>
+            </div>
+          </div>
+          <!-- Shipping -->
+          <div class="settings-pane" id="pol-shipping">
+            <div class="form-group">
+              <label>Delivery Areas (one per line)</label>
+              <textarea id="p-shipAreas" rows="5"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Shipping Charges (one per line)</label>
+              <textarea id="p-shipCharges" rows="4"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="save-bar">
+          <span class="saved-indicator" id="policies-saved"><i class="fas fa-check-circle"></i> Policies Saved!</span>
+          <button class="btn-save" onclick="savePolicies()">
+            <i class="fas fa-save"></i> Save Policies
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /page-container -->
+  </main>
+</div><!-- /admin-app -->
+
+<!-- ==================== PRODUCT MODAL ==================== -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal-box">
+    <h3 id="product-modal-title"><i class="fas fa-box" style="color:var(--primary)"></i> Add Product</h3>
+    <button class="modal-close" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+    <input type="hidden" id="edit-product-id"/>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" id="p-name" placeholder="e.g. Classic Wooden Frame"/>
+      </div>
+      <div class="form-group">
+        <label>Category *</label>
+        <input type="text" id="p-category" placeholder="e.g. Photo Frames" list="cat-list"/>
+        <datalist id="cat-list"></datalist>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Price (₹) *</label>
+        <input type="number" id="p-price" placeholder="350"/>
+      </div>
+      <div class="form-group">
+        <label>Original Price (₹) — for discount</label>
+        <input type="number" id="p-original" placeholder="500"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Rating (0–5)</label>
+        <input type="number" id="p-rating" step="0.1" min="0" max="5" placeholder="4.5"/>
+      </div>
+      <div class="form-group">
+        <label>Rating Count</label>
+        <input type="number" id="p-ratingcount" placeholder="42"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Product Image URL (ImgBB) *</label>
+      <input type="url" id="p-image" placeholder="[i.ibb.co](https://i.ibb.co/your-image.jpg)" oninput="previewProductImg()"/>
+      <div class="hint"><i class="fas fa-info-circle"></i> Upload to imgbb.com and paste direct link</div>
+    </div>
+    <div class="img-preview-wrap" id="product-img-preview" style="height:100px">
+      <div class="img-hint">Image preview</div>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Additional Image URLs (comma-separated for gallery)</label>
+      <input type="text" id="p-images" placeholder="url1, url2, url3"/>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="p-desc" rows="2" placeholder="Describe the product..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sizes (comma-separated)</label>
+        <input type="text" id="p-sizes" placeholder="4x6, 5x7, 8x10"/>
+      </div>
+      <div class="form-group">
+        <label>Product Highlight</label>
+        <input type="text" id="p-highlight" placeholder="Handcrafted premium wood"/>
+      </div>
+    </div>
+    <div class="toggle-wrap">
+      <div class="toggle on" id="p-instock-toggle" onclick="this.classList.toggle('on')"></div>
+      <span class="toggle-label">In Stock</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+      <button class="btn-save" onclick="saveProduct()">
+        <i class="fas fa-save"></i> Save Product
+      </button>
+      <button class="btn-danger" onclick="closeProductModal()">Cancel</button>
+    </div>
   </div>
 </div>
 
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-const app = initializeApp({
-  apiKey:"AIzaSyAHTHYZFIOdmYaZz0rVxjE8nQLUaqmJiUw",
-  authDomain:"bluebirdsgifthouse-fcbef.firebaseapp.com",
-  databaseURL:"https://bluebirdsgifthouse-fcbef-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"bluebirdsgifthouse-fcbef",
-  storageBucket:"bluebirdsgifthouse-fcbef.firebasestorage.app",
-  messagingSenderId:"641272713979",
-  appId:"1:641272713979:web:bb91e0fe7f6ab5ce32165e"
-});
-const db = getDatabase(app);
-window._fbSave = async function(data){
-  try{ await set(ref(db,"storeData"),data); return {ok:true}; }
-  catch(e){ return {ok:false,err:e.message}; }
-};
-window._fbTest = async function(){
-  try{ await set(ref(db,"_test"),{ts:Date.now()}); return {ok:true}; }
-  catch(e){ return {ok:false,err:e.message}; }
-};
-function setChipGlobal(s,t){
-  var c=document.getElementById("fbChip");
-  var tx=document.getElementById("fbChipTxt");
-  var sb=document.getElementById("sbStatus");
-  if(c) c.className="chip "+(s==="g"?"chip-g":s==="r"?"chip-r":"chip-y");
-  if(tx) tx.textContent=t;
-  if(sb) sb.textContent=t;
-  if(c){ var dot=c.querySelector(".dot"); if(dot) dot.className="dot"+(s==="y"?" dot-spin":""); }
-  window._fbStatus={s,t};
-}
-window._setFbChip = setChipGlobal;
+<!-- ==================== CATEGORY MODAL ==================== -->
+<div class="modal-overlay" id="cat-modal">
+  <div class="modal-box" style="max-width:400px">
+    <h3><i class="fas fa-tag" style="color:var(--primary)"></i> Category</h3>
+    <button class="modal-close" onclick="closeCatModal()"><i class="fas fa-times"></i></button>
+    <input type="hidden" id="edit-cat-id"/>
+    <div class="form-group">
+      <label>Category Name *</label>
+      <input type="text" id="c-name" placeholder="e.g. Photo Frames"/>
+    </div>
+    <div class="form-group">
+      <label>Icon (Emoji)</label>
+      <input type="text" id="c-icon" placeholder="🖼️"/>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-save" onclick="saveCat()"><i class="fas fa-save"></i> Save</button>
+      <button class="btn-danger" onclick="closeCatModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
-var _fbTimer = setTimeout(function(){
-  if(window._fbConnected === undefined){
-    window._fbConnected = false;
-    setChipGlobal("r","❌ Timeout — Check Rules");
-    if(window._fbReadyCb) window._fbReadyCb();
-  }
-}, 10000);
+<!-- ==================== REVIEW MODAL ==================== -->
+<div class="modal-overlay" id="review-modal">
+  <div class="modal-box" style="max-width:460px">
+    <h3><i class="fas fa-star" style="color:var(--accent)"></i> Review</h3>
+    <button class="modal-close" onclick="closeReviewModal()"><i class="fas fa-times"></i></button>
+    <input type="hidden" id="edit-review-id"/>
+    <div class="form-group">
+      <label>Customer Name</label>
+      <input type="text" id="r-name" placeholder="e.g. Priya S."/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Rating (1–5)</label>
+        <input type="number" id="r-rating" min="1" max="5" placeholder="5"/>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="text" id="r-date" placeholder="2 weeks ago"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Review Text</label>
+      <textarea id="r-text" rows="3" placeholder="What the customer said..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-save" onclick="saveReview()"><i class="fas fa-save"></i> Save</button>
+      <button class="btn-danger" onclick="closeReviewModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
-get(ref(db,"storeData")).then(function(snap){
-  clearTimeout(_fbTimer);
-  var d = snap.val();
-  if(d){ window.D = d; localStorage.setItem("bbgh_cache", JSON.stringify(d)); }
-  window._fbConnected = true;
-  setChipGlobal("g","✅ Connected");
-  if(window._fbReadyCb) window._fbReadyCb();
-}).catch(function(e){
-  clearTimeout(_fbTimer);
-  window._fbConnected = false;
-  var msg = e.message||"";
-  setChipGlobal("r", msg.includes("PERMISSION") ? "❌ Rules Blocked" : "❌ Failed");
-  if(window._fbReadyCb) window._fbReadyCb();
-});
-</script>
+<!-- ==================== FEATURE MODAL ==================== -->
+<div class="modal-overlay" id="feature-modal">
+  <div class="modal-box" style="max-width:400px">
+    <h3><i class="fas fa-medal" style="color:var(--primary)"></i> Feature</h3>
+    <button class="modal-close" onclick="closeFeatureModal()"><i class="fas fa-times"></i></button>
+    <input type="hidden" id="edit-feature-id"/>
+    <div class="form-group">
+      <label>Icon (Emoji)</label>
+      <input type="text" id="f-icon" placeholder="🚚"/>
+    </div>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="f-title" placeholder="Free Delivery in Akot"/>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="f-desc" rows="2" placeholder="Describe this feature..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-save" onclick="saveFeature()"><i class="fas fa-save"></i> Save</button>
+      <button class="btn-danger" onclick="closeFeatureModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
 
 <script>
-var ADMIN_PWD = localStorage.getItem("bbgh_pwd") || "bluebirds2025";
-var currentPage = "dash";
+/* ================================================================
+   ADMIN STATE
+   ================================================================ */
+let adminAuthenticated = false;
+let allProductsAdmin = {};
+let allOrdersAdmin = {};
+let allReviewsAdmin = {};
+let allFeaturesAdmin = {};
+let allCatsAdmin = {};
+let siteSettingsAdmin = {};
 
-var DEFAULT_DATA = {
-  business:{name:"Bluebirds Gift House",tagline:"Premium frames, books & gifts. Free delivery in Akot.",wa:"919876543210",phone:"+91 98765 43210",city:"Akot, Maharashtra",waMsg:"Hi! I want to place an order from Bluebirds Gift House, Akot."},
-  hero:{title:"The Perfect Gift for Every Occasion",sub:"Premium photo frames, books & gifts. Free home delivery in Akot.",stats:{products:"50+",customers:"500+",years:"5+"}},
-  categories:[
-    {id:1,name:"Photo Frames",desc:"Premium wooden & metal frames",emoji:"🖼️",img:"",link:"frames",subcats:["Spiritual Frames","Family Frames","Couple Frames","Kids Frames"]},
-    {id:2,name:"Books",desc:"Academic, spiritual, fiction & more",emoji:"📚",img:"",link:"books",subcats:["Spiritual Books","Story Books","Academic Books"]},
-    {id:3,name:"Gifts & Hampers",desc:"Curated gift boxes for all occasions",emoji:"🎁",img:"",link:"gifts",subcats:["Birthday Gifts","Anniversary Gifts","Festival Gifts"]},
-    {id:4,name:"Stationery",desc:"Pens, notebooks & office supplies",emoji:"✏️",img:"",link:"stationery",subcats:[]},
-    {id:5,name:"Spiritual Items",desc:"Idols, diyas, pooja items",emoji:"🙏",img:"",link:"spiritual",subcats:["Idols","Diyas & Candles","Pooja Items"]},
-    {id:6,name:"Calendars & Diaries",desc:"Yearly planners & wall calendars",emoji:"📅",img:"",link:"calendars",subcats:[]}
-  ],
-  products:[
-    {id:1,name:"Classic Wooden Frame",cat:"frames",subcat:"Family Frames",emoji:"🖼️",img:"",desc:"Elegant solid wood frame with golden border.",sizes:["4x6","5x7","8x10","12x16"],price:299,originalPrice:450,badge:"Best Seller"},
-    {id:2,name:"Couple Photo Frame",cat:"frames",subcat:"Couple Frames",emoji:"💑",img:"",desc:"Beautiful dual frame for couples.",sizes:["5x7","8x10"],price:399,originalPrice:599,badge:"Popular"},
-    {id:3,name:"Birthday Gift Hamper",cat:"gifts",subcat:"Birthday Gifts",emoji:"🎂",img:"",desc:"Beautiful gift hamper for birthdays.",sizes:["Small","Medium","Large"],price:499,originalPrice:699,badge:"New"}
-  ],
-  reviews:[
-    {id:1,name:"Sneha Wankhede",location:"Akot",stars:5,text:"Beautiful family frame! Quality outstanding, delivery super fast!"},
-    {id:2,name:"Rahul Deshmukh",location:"Akot",stars:5,text:"Ordered a spiritual frame for my parents. They loved it!"},
-    {id:3,name:"Pooja Agarwal",location:"Akot",stars:5,text:"The couple frame looks stunning. Very responsive on WhatsApp!"}
-  ],
-  wrappers:[
-    {id:1,name:"Red Floral",emoji:"🌹",img:"",price:0},
-    {id:2,name:"Gold Stars",emoji:"⭐",img:"",price:0},
-    {id:3,name:"Birthday Balloons",emoji:"🎈",img:"",price:0},
-    {id:4,name:"Silver Ribbon",emoji:"🎀",img:"",price:0},
-    {id:5,name:"Kraft & Twine",emoji:"🤎",img:"",price:0},
-    {id:6,name:"Festival Diwali",emoji:"🪔",img:"",price:0},
-    {id:7,name:"Pastel Love",emoji:"💝",img:"",price:0}
-  ],
-  design:{}
-};
+const DEFAULT_ADMIN_USER = 'admin';
+let ADMIN_PASS = 'bluebirds2025';
 
-window.D = JSON.parse(localStorage.getItem("bbgh_cache") || "null") || DEFAULT_DATA;
+/* ================================================================
+   HELPERS
+   ================================================================ */
+function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 
-window._fbReadyCb = function(){
-  if(window._fbStatus && window._setFbChip) window._setFbChip(window._fbStatus.s, window._fbStatus.t);
-  if(document.getElementById("appWrap").classList.contains("show")) renderPage(currentPage);
-};
+function toast(msg, type = 'info') {
+  const icons = { success: 'fas fa-check-circle', error: 'fas fa-exclamation-circle', info: 'fas fa-info-circle' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i class="${icons[type]||icons.info}"></i><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(20px)'; el.style.transition='0.3s'; setTimeout(()=>el.remove(),300); }, 3500);
+}
 
-// ── LOGIN ──
-document.getElementById("loginBtn").addEventListener("click", doLogin);
-document.getElementById("loginPwd").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
+function dbRef(path) { return window._dbRef(window._db, path); }
+function dbSet(path, data) { return window._dbSet(dbRef(path), data); }
+function dbPush(path, data) { return window._dbPush(dbRef(path), data); }
+function dbRemove(path) { return window._dbRemove(dbRef(path)); }
+function dbUpdate(path, data) { return window._dbUpdate(dbRef(path), data); }
+function dbOnValue(path, cb) { return window._dbOnValue(dbRef(path), snap => cb(snap.val())); }
 
-function doLogin(){
-  var pwd = document.getElementById("loginPwd").value;
-  if(pwd === ADMIN_PWD){
-    document.getElementById("loginWrap").style.display = "none";
-    document.getElementById("appWrap").classList.add("show");
-    if(window._fbStatus && window._setFbChip) window._setFbChip(window._fbStatus.s, window._fbStatus.t);
-    renderPage("dash");
+/* ================================================================
+   LOGIN
+   ================================================================ */
+function doAdminLogin() {
+  const user = document.getElementById('admin-user').value.trim();
+  const pass = document.getElementById('admin-pass').value.trim();
+  const storedPass = lsGet('adminPass') || ADMIN_PASS;
+  const errEl = document.getElementById('login-error');
+  if (user === DEFAULT_ADMIN_USER && pass === storedPass) {
+    adminAuthenticated = true;
+    lsSet('adminAuth', true);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').classList.add('open');
+    errEl.classList.remove('show');
+    initAdminFirebase();
+    toast('Welcome back, Admin!', 'success');
   } else {
-    document.getElementById("loginErr").classList.add("show");
-    document.getElementById("loginPwd").value = "";
-    document.getElementById("loginPwd").focus();
+    errEl.classList.add('show');
+    errEl.textContent = '❌ Wrong credentials. Try again.';
   }
 }
 
-document.getElementById("logoutBtn").addEventListener("click", function(){
-  document.getElementById("appWrap").classList.remove("show");
-  document.getElementById("loginWrap").style.display = "flex";
-  document.getElementById("loginPwd").value = "";
-  document.getElementById("loginErr").classList.remove("show");
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !adminAuthenticated) doAdminLogin();
 });
 
-document.getElementById("mobToggle").addEventListener("click", function(){
-  document.getElementById("sidebar").classList.toggle("open");
-});
-
-// ── NAV ──
-var TITLES = {dash:"📊 Dashboard",prods:"🖼️ Products",cats:"🏷️ Categories",revs:"⭐ Reviews",wraps:"🎁 Gift Wrapping",hero:"🌟 Hero Banner",biz:"🏪 Business Info",colors:"🎨 Colors",fonts:"✍️ Fonts",deploy:"🚀 Links",fixfb:"🔧 Fix Firebase"};
-
-document.querySelectorAll(".nav-item[data-page]").forEach(function(btn){
-  btn.addEventListener("click", function(){
-    renderPage(this.getAttribute("data-page"));
-    document.getElementById("sidebar").classList.remove("open");
-  });
-});
-
-function renderPage(page){
-  currentPage = page;
-  document.querySelectorAll(".nav-item[data-page]").forEach(function(b){
-    b.classList.toggle("active", b.getAttribute("data-page") === page);
-  });
-  var t = document.getElementById("pageTitle");
-  if(t) t.textContent = TITLES[page] || page;
-  var map = {dash:pgDash,prods:pgProds,cats:pgCats,revs:pgRevs,wraps:pgWraps,hero:pgHero,biz:pgBiz,colors:pgColors,fonts:pgFonts,deploy:pgDeploy,fixfb:pgFixFb};
-  if(map[page]) map[page]();
+function doAdminLogout() {
+  adminAuthenticated = false;
+  lsSet('adminAuth', false);
+  location.reload();
 }
 
-// ── PUBLISH ──
-document.getElementById("publishBtn").addEventListener("click", doPublish);
+// Auto-login if session active
+window.addEventListener('DOMContentLoaded', () => {
+  if (lsGet('adminAuth') === true) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').classList.add('open');
+    adminAuthenticated = true;
+    if (window._firebaseReady) initAdminFirebase();
+    else document.addEventListener('firebaseReady', initAdminFirebase);
+  }
+});
 
-async function doPublish(){
-  var btn = document.getElementById("publishBtn");
-  btn.disabled = true; btn.textContent = "⏳ Saving...";
+/* ================================================================
+   FIREBASE INIT
+   ================================================================ */
+document.addEventListener('firebaseReady', () => {
+  document.getElementById('fb-status-dot').style.background = 'var(--success)';
+  document.getElementById('fb-status-text').textContent = 'Connected';
+  if (adminAuthenticated) initAdminFirebase();
+});
 
-  // Check data size — Firebase Realtime DB limit is ~10MB but practical limit with images is ~4MB
-  var dataStr = JSON.stringify(window.D);
-  var dataSizeKB = Math.round(dataStr.length / 1024);
-  if(dataSizeKB > 4000){
-    showToast("⚠️ Data too large ("+dataSizeKB+"KB). Remove some photos/videos first.","err");
-    btn.disabled = false; btn.innerHTML = "☁️ Save &amp; Publish";
+function initAdminFirebase() {
+  if (!window._firebaseReady) return;
+
+  dbOnValue('products', data => {
+    allProductsAdmin = data || {};
+    renderProductsTable();
+    renderCategoriesTable();
+    updateDashStats();
+    populateCatDatalist();
+  });
+
+  dbOnValue('orders', data => {
+    allOrdersAdmin = data || {};
+    renderOrders();
+    renderDashRecentOrders();
+    updateDashStats();
+  });
+
+  dbOnValue('reviews', data => {
+    allReviewsAdmin = data || {};
+    renderReviewsList();
+    updateDashStats();
+  });
+
+  dbOnValue('features', data => {
+    allFeaturesAdmin = data || {};
+    renderFeaturesList();
+  });
+
+  dbOnValue('categories', data => {
+    allCatsAdmin = data || {};
+    renderCategoriesTable();
+    populateCatDatalist();
+  });
+
+  dbOnValue('settings', data => {
+    siteSettingsAdmin = data || {};
+    fillSettingsForms(data || {});
+  });
+}
+
+/* ================================================================
+   NAVIGATION
+   ================================================================ */
+const sectionTitles = {
+  dashboard:'Dashboard',products:'Products',categories:'Categories',
+  orders:'Orders',banner:'Banner & Hero',reviews:'Reviews',
+  features:'Features',settings:'Settings',policies:'Policies'
+};
+
+function showSection(id, navEl) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('topbar-title').textContent = sectionTitles[id] || id;
+  closeSidebar();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+/* ================================================================
+   DASHBOARD
+   ================================================================ */
+function updateDashStats() {
+  document.getElementById('dash-products').textContent = Object.keys(allProductsAdmin).length;
+  document.getElementById('dash-orders').textContent = Object.keys(allOrdersAdmin).length;
+  const pending = Object.values(allOrdersAdmin).filter(o => o.status === 'pending').length;
+  document.getElementById('dash-pending').textContent = pending;
+  document.getElementById('dash-reviews').textContent = Object.keys(allReviewsAdmin).length;
+  const badge = document.getElementById('pending-badge');
+  if (pending > 0) { badge.style.display = 'inline'; badge.textContent = pending; }
+  else badge.style.display = 'none';
+}
+
+function renderDashRecentOrders() {
+  const orders = Object.entries(allOrdersAdmin)
+    .sort(([,a],[,b]) => (b.timestamp||0) - (a.timestamp||0))
+    .slice(0,5);
+  const el = document.getElementById('dash-recent-orders');
+  if (!orders.length) {
+    el.innerHTML = '<div class="empty-state"><i class="fas fa-box"></i><p>No orders yet</p></div>';
     return;
   }
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="background:var(--bg3)">
+      <th style="padding:10px 14px;font-size:0.75rem;text-align:left;color:var(--text2)">Name</th>
+      <th style="padding:10px 14px;font-size:0.75rem;text-align:left;color:var(--text2)">Total</th>
+      <th style="padding:10px 14px;font-size:0.75rem;text-align:left;color:var(--text2)">Payment</th>
+      <th style="padding:10px 14px;font-size:0.75rem;text-align:left;color:var(--text2)">Status</th>
+    </tr></thead>
+    <tbody>
+    ${orders.map(([id,o]) => `
+      <tr style="border-top:1px solid var(--border2)">
+        <td style="padding:10px 14px;font-size:0.85rem">${o.name||'—'}</td>
+        <td style="padding:10px 14px;font-size:0.85rem;color:var(--accent)">₹${o.total||0}</td>
+        <td style="padding:10px 14px;font-size:0.85rem">${(o.payment||'cod').toUpperCase()}</td>
+        <td style="padding:10px 14px">${statusBadge(o.status)}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
 
-  if(window._fbSave){
-    var r = await window._fbSave(window.D);
-    if(r.ok){
-      localStorage.setItem("bbgh_cache", JSON.stringify(window.D));
-      showToast("✅ Published! ("+dataSizeKB+"KB saved)","ok");
-      if(window._setFbChip) window._setFbChip("g","✅ Saved!");
-      setTimeout(function(){ if(window._setFbChip) window._setFbChip("g","✅ Connected"); },3000);
-    } else {
-      var errMsg = r.err||"";
-      if(errMsg.includes("too_large") || errMsg.includes("length") || dataSizeKB > 900){
-        showToast("❌ Data too large for Firebase ("+dataSizeKB+"KB). Images are being compressed — try re-uploading photos.","err");
-      } else {
-        showToast("❌ Failed: " + (errMsg||"Check Firebase rules"),"err");
-      }
-    }
-  } else {
-    localStorage.setItem("bbgh_cache", JSON.stringify(window.D));
-    showToast("⚠️ Saved locally only. Firebase not connected.","info");
+function statusBadge(s) {
+  const map = { pending:'badge-yellow',confirmed:'badge-purple',delivered:'badge-green',cancelled:'badge-red' };
+  return `<span class="badge ${map[s]||'badge-yellow'}">${s||'pending'}</span>`;
+}
+
+/* ================================================================
+   PRODUCTS
+   ================================================================ */
+function renderProductsTable() {
+  const q = (document.getElementById('product-search')?.value || '').toLowerCase();
+  const tbody = document.getElementById('products-tbody');
+  const prods = Object.entries(allProductsAdmin).filter(([,p]) =>
+    !q || (p.name||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q)
+  );
+  if (!prods.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text2)">No products found</td></tr>';
+    return;
   }
-  btn.disabled = false; btn.innerHTML = "☁️ Save &amp; Publish";
+  tbody.innerHTML = prods.map(([id, p]) => {
+    const disc = p.originalPrice && p.price < p.originalPrice
+      ? Math.round((1 - p.price/p.originalPrice)*100) : 0;
+    return `<tr>
+      <td><img class="td-img" src="${p.image||'[cdn-icons-png.flaticon.com](https://cdn-icons-png.flaticon.com/512/3069/3069172.png)'}" alt=""
+        onerror="this.src='[cdn-icons-png.flaticon.com](https://cdn-icons-png.flaticon.com/512/3069/3069172.png)'"/></td>
+      <td style="max-width:180px">
+        <div style="font-weight:600;font-size:0.85rem">${p.name||'—'}</div>
+        ${p.highlight ? `<div style="font-size:0.72rem;color:var(--text2);margin-top:2px">${p.highlight}</div>` : ''}
+      </td>
+      <td><span class="badge badge-purple">${p.category||'—'}</span></td>
+      <td style="color:var(--accent);font-weight:700">₹${p.price||0}</td>
+      <td style="color:var(--text2)">
+        ${p.originalPrice ? `<span style="text-decoration:line-through">₹${p.originalPrice}</span>` : '—'}
+        ${disc ? `<span style="color:var(--success);font-size:0.72rem;font-weight:700;margin-left:4px">${disc}%</span>` : ''}
+      </td>
+      <td>${p.rating||0} ⭐ <span style="font-size:0.72rem;color:var(--text2)">(${p.ratingCount||0})</span></td>
+      <td>${p.inStock !== false ? '<span class="badge badge-green">In Stock</span>' : '<span class="badge badge-red">Out</span>'}</td>
+      <td><div class="table-actions">
+        <button class="btn-edit" onclick="editProduct('${id}')"><i class="fas fa-edit"></i></button>
+        <button class="btn-danger" onclick="deleteProduct('${id}')"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
 }
 
-// ── TOAST ──
-function showToast(msg, type){
-  var t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast show " + (type||"info");
-  clearTimeout(window._tt);
-  window._tt = setTimeout(function(){ t.classList.remove("show"); }, 3500);
+function openProductModal(id) {
+  clearProductForm();
+  document.getElementById('product-modal-title').innerHTML =
+    `<i class="fas fa-box" style="color:var(--primary)"></i> ${id ? 'Edit' : 'Add'} Product`;
+  document.getElementById('product-modal').classList.add('open');
 }
 
-// ── IMAGE PICKER ──
-// ── IMAGE COMPRESSION ──
-// Resizes any image to max 800px wide/tall at 82% quality before saving.
-// This keeps Firebase data tiny (a phone photo goes from ~3MB → ~80KB).
-function compressImage(dataURL, maxPx, quality, cb){
-  var img = new Image();
-  img.onload = function(){
-    var w = img.width, h = img.height;
-    if(w > maxPx || h > maxPx){
-      if(w > h){ h = Math.round(h * maxPx / w); w = maxPx; }
-      else      { w = Math.round(w * maxPx / h); h = maxPx; }
-    }
-    var canvas = document.createElement("canvas");
-    canvas.width = w; canvas.height = h;
-    canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-    cb(canvas.toDataURL("image/jpeg", quality));
+function closeProductModal() {
+  document.getElementById('product-modal').classList.remove('open');
+}
+
+function clearProductForm() {
+  ['p-name','p-category','p-price','p-original','p-rating','p-ratingcount',
+   'p-image','p-images','p-desc','p-sizes','p-highlight'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('edit-product-id').value = '';
+  document.getElementById('p-instock-toggle').classList.add('on');
+  document.getElementById('product-img-preview').innerHTML = '<div class="img-hint">Image preview</div>';
+}
+
+function editProduct(id) {
+  const p = allProductsAdmin[id];
+  if (!p) return;
+  clearProductForm();
+  document.getElementById('edit-product-id').value = id;
+  document.getElementById('p-name').value = p.name || '';
+  document.getElementById('p-category').value = p.category || '';
+  document.getElementById('p-price').value = p.price || '';
+  document.getElementById('p-original').value = p.originalPrice || '';
+  document.getElementById('p-rating').value = p.rating || '';
+  document.getElementById('p-ratingcount').value = p.ratingCount || '';
+  document.getElementById('p-image').value = p.image || '';
+  document.getElementById('p-images').value = (p.images||[]).join(', ');
+  document.getElementById('p-desc').value = p.description || '';
+  document.getElementById('p-sizes').value = (p.sizes||[]).join(', ');
+  document.getElementById('p-highlight').value = p.highlight || '';
+  document.getElementById('p-instock-toggle').classList.toggle('on', p.inStock !== false);
+  if (p.image) {
+    document.getElementById('product-img-preview').innerHTML =
+      `<img src="${p.image}" style="max-height:120px;object-fit:contain"/>`;
+  }
+  document.getElementById('product-modal-title').innerHTML =
+    `<i class="fas fa-edit" style="color:var(--primary)"></i> Edit Product`;
+  document.getElementById('product-modal').classList.add('open');
+}
+
+function saveProduct() {
+  const name = document.getElementById('p-name').value.trim();
+  const category = document.getElementById('p-category').value.trim();
+  const price = parseFloat(document.getElementById('p-price').value);
+  if (!name || !category || isNaN(price)) {
+    toast('Name, category and price are required', 'error'); return;
+  }
+  const imgUrl = document.getElementById('p-image').value.trim();
+  if (!imgUrl) { toast('Product image URL is required', 'error'); return; }
+
+  const data = {
+    name,
+    category,
+    price,
+    originalPrice: parseFloat(document.getElementById('p-original').value) || null,
+    rating: parseFloat(document.getElementById('p-rating').value) || 4.5,
+    ratingCount: parseInt(document.getElementById('p-ratingcount').value) || 0,
+    image: imgUrl,
+    images: document.getElementById('p-images').value.split(',').map(s=>s.trim()).filter(Boolean),
+    description: document.getElementById('p-desc').value.trim(),
+    sizes: document.getElementById('p-sizes').value.split(',').map(s=>s.trim()).filter(Boolean),
+    highlight: document.getElementById('p-highlight').value.trim(),
+    inStock: document.getElementById('p-instock-toggle').classList.contains('on'),
+    updatedAt: Date.now()
   };
-  img.src = dataURL;
-}
+  // Clean nulls
+  Object.keys(data).forEach(k => { if (data[k] === null || data[k] === '') delete data[k]; });
 
-function pickImage(maxMB, cb){
-  var inp = document.createElement("input");
-  inp.type = "file"; inp.accept = "image/*";
-  inp.onchange = function(){
-    var f = inp.files[0]; if(!f) return;
-    if(f.size > maxMB*1024*1024){ showToast("Max "+maxMB+"MB","err"); return; }
-    var r = new FileReader();
-    r.onload = function(ev){
-      // Compress to max 800px, 82% quality — keeps Firebase well under 1MB limit
-      compressImage(ev.target.result, 800, 0.82, function(compressed){
-        cb(compressed);
-      });
-    };
-    r.readAsDataURL(f);
-  };
-  inp.click();
-}
-
-// ── ESCAPE HTML ──
-function h(str){
-  return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
-// ══════════════════════════
-// DASHBOARD
-// ══════════════════════════
-function pgDash(){
-  var el = document.getElementById("pageContent");
-  var prods = (window.D.products||[]).length;
-  var cats  = (window.D.categories||[]).length;
-  var revs  = (window.D.reviews||[]).length;
-  var fb = window._fbConnected === true ? "✅ Live" : (window._fbConnected === false ? "❌ Error" : "⏳ Connecting");
-
-  var html = '<div class="stats-row">';
-  html += '<div class="stat-card"><div class="stat-icon">🖼️</div><div class="stat-num">'+prods+'</div><div class="stat-lbl">Products</div></div>';
-  html += '<div class="stat-card"><div class="stat-icon">🏷️</div><div class="stat-num">'+cats+'</div><div class="stat-lbl">Categories</div></div>';
-  html += '<div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-num">'+revs+'</div><div class="stat-lbl">Reviews</div></div>';
-  html += '<div class="stat-card"><div class="stat-icon">☁️</div><div class="stat-num" style="font-size:.88rem;padding-top:8px">'+fb+'</div><div class="stat-lbl">Firebase</div></div>';
-  html += '</div>';
-  html += '<div class="alert alert-g"><b>✅ How it works:</b> Make changes in any section, then click ☁️ Save &amp; Publish. Your customer site updates instantly!</div>';
-  html += '<div class="box"><div class="box-head"><div class="box-title">⚡ Quick Actions</div></div><div class="box-body"><div class="quick-grid">';
-  html += qbtn("🖼️","Products","prods")+qbtn("🏷️","Categories","cats")+qbtn("⭐","Reviews","revs");
-  html += qbtn("🌟","Hero Banner","hero")+qbtn("🏪","Business Info","biz")+qbtn("🎨","Colors","colors");
-  html += '</div></div></div>';
-  el.innerHTML = html;
-
-  el.querySelectorAll(".quick-btn").forEach(function(b){
-    b.addEventListener("click", function(){ renderPage(this.getAttribute("data-page")); });
-  });
-}
-function qbtn(icon,name,page){
-  return '<button class="quick-btn" data-page="'+page+'"><div class="quick-icon">'+icon+'</div><div class="quick-name">'+name+'</div></button>';
-}
-
-// ══════════════════════════
-// PRODUCTS
-// ══════════════════════════
-function pgProds(){
-  var el = document.getElementById("pageContent");
-  var prods = window.D.products || [];
-  var cats  = window.D.categories || [];
-
-  var html = '<div class="box"><div class="box-head"><div class="box-title">🖼️ All Products ('+prods.length+')</div>';
-  html += '<button class="btn-add" id="showAddProd">➕ Add Product</button></div>';
-  html += '<div class="box-body"><div class="rows-list" id="prodList">';
-
-  prods.forEach(function(p){
-    var thumb = p.img ? '<img src="'+p.img+'" alt="">' : '<span style="font-size:1.6rem">'+(p.emoji||"🎁")+'</span>';
-    html += '<div class="row-item">';
-    html += '<div class="row-thumb">'+thumb+'</div>';
-    var stockTxt = p.stock===undefined||p.stock==='' ? 'Unlimited' : (parseInt(p.stock)===0 ? '❌ Out of Stock' : '📦 '+p.stock+' in stock');
-    html += '<div class="row-info">';
-    html += '<div class="row-name">'+h(p.name)+'</div>';
-    html += '<div class="row-meta">&#8377;'+p.price+' &middot; '+h(p.cat)+(p.subcat?' &rarr; '+h(p.subcat):'')+(p.badge?' &middot; '+h(p.badge):'')+'</div>';
-    html += '<div class="row-meta" style="margin-top:2px">'+stockTxt+'</div>';
-    html += '</div>';
-    html += '<div class="row-actions">';
-    html += '<button class="btn-edit" data-action="prod-editdetails" data-id="'+p.id+'">✏️ Edit</button>';
-    html += '<button class="btn-edit" data-action="prod-photo" data-id="'+p.id+'">📷 Photo</button>';
-    html += '<button class="btn-edit" data-action="prod-video" data-id="'+p.id+'">'+(p.video?'🎬 Video ✅':'🎬 Video')+'</button>';
-    html += '<button class="btn-edit" data-action="prod-images" data-id="'+p.id+'">🖼️ Gallery ('+(p.images&&p.images.length?p.images.length:0)+'/4)</button>';
-    html += '<button class="btn-edit" data-action="prod-stock" data-id="'+p.id+'" data-stock="'+(p.stock===undefined||p.stock===''?'':p.stock)+'">📦 Stock</button>';
-    html += '<button class="btn-del" data-action="prod-del" data-id="'+p.id+'">🗑️ Delete</button>';
-    html += '</div></div>';
-  });
-
-  html += '</div></div></div>';
-
-  // Add product form (hidden by default)
-  var catOpts = '<option value="">Select category</option>';
-  cats.forEach(function(c){ catOpts += '<option value="'+h(c.link||c.name.toLowerCase())+'">'+h(c.emoji||"")+" "+h(c.name)+'</option>'; });
-
-  html += '<div class="box" id="addProdForm" style="display:none">';
-  html += '<div class="box-head"><div class="box-title">➕ Add New Product</div></div>';
-  html += '<div class="box-body">';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Product Name *</label><input class="fi" id="np-name" placeholder="Classic Wooden Frame"></div>';
-  html += '<div><label class="fl">Emoji (if no photo)</label><input class="fi" id="np-emoji" placeholder="🖼️" style="width:80px"></div>';
-  html += '</div>';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Category *</label><select class="fi" id="np-cat"><option value="">Select category</option>'+catOpts+'</select></div>';
-  html += '<div><label class="fl">Sub-category</label><select class="fi" id="np-subcat"><option value="">— select category first —</option></select></div>';
-  html += '</div>';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Price ₹ *</label><input class="fi" id="np-price" type="number" placeholder="299"></div>';
-  html += '<div><label class="fl">Original Price ₹</label><input class="fi" id="np-orig" type="number" placeholder="450"></div>';
-  html += '</div>';
-  html += '<label class="fl">Description</label><textarea class="fi" id="np-desc" placeholder="Describe the product..."></textarea>';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Sizes (comma separated)</label><input class="fi" id="np-sizes" placeholder="4x6, 5x7, 8x10"></div>';
-  html += '<div><label class="fl">Badge</label><input class="fi" id="np-badge" placeholder="Best Seller / New / Trending"></div>';
-  html += '</div>';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Stock Quantity (leave blank = Unlimited)</label><input class="fi" id="np-stock" type="number" placeholder="e.g. 10 — blank = unlimited"></div>';
-  html += '<div></div>';
-  html += '</div>';
-  html += '<button class="btn-full" id="addProdBtn">➕ Add Product &amp; Publish</button>';
-  html += '</div></div>';
-
-  el.innerHTML = html;
-
-  document.getElementById("showAddProd").addEventListener("click", function(){
-    var f = document.getElementById("addProdForm");
-    f.style.display = "block";
-    f.scrollIntoView({behavior:"smooth"});
-  });
-
-  // When category changes → populate sub-category dropdown from that category's subcats
-  document.getElementById("np-cat").addEventListener("change", function(){
-    var selectedLink = this.value;
-    var cat = (window.D.categories||[]).find(function(c){
-      return (c.link||c.name.toLowerCase()) === selectedLink;
-    });
-    var subcatSel = document.getElementById("np-subcat");
-    subcatSel.innerHTML = '<option value="">— None / General —</option>';
-    if(cat && cat.subcats && cat.subcats.length){
-      cat.subcats.forEach(function(s){
-        subcatSel.innerHTML += '<option value="'+h(s)+'">'+h(s)+'</option>';
-      });
-    } else {
-      subcatSel.innerHTML = '<option value="">— No sub-categories for this category —</option>';
-    }
-  });
-
-  document.getElementById("addProdBtn").addEventListener("click", function(){
-    var name  = document.getElementById("np-name").value.trim();
-    var price = parseInt(document.getElementById("np-price").value);
-    if(!name){ showToast("⚠️ Enter product name","err"); return; }
-    if(!price){ showToast("⚠️ Enter price","err"); return; }
-    window.D.products = window.D.products||[];
-    // ── Duplicate name check ──
-    var duplicate = window.D.products.find(function(p){
-      return p.name.trim().toLowerCase() === name.toLowerCase();
-    });
-    if(duplicate){ showToast("⚠️ A product named \""+name+"\" already exists. Please use a different name.","err"); return; }
-    var stockVal = document.getElementById("np-stock").value.trim();
-    window.D.products.push({
-      id:Date.now(), name:name,
-      cat:document.getElementById("np-cat").value,
-      subcat:document.getElementById("np-subcat").value.trim(),
-      emoji:document.getElementById("np-emoji").value.trim()||"🎁",
-      img:"",
-      images:[],
-      video:"",
-      desc:document.getElementById("np-desc").value.trim(),
-      price:price,
-      originalPrice:parseInt(document.getElementById("np-orig").value)||0,
-      sizes:document.getElementById("np-sizes").value.split(",").map(function(s){return s.trim();}).filter(Boolean),
-      badge:document.getElementById("np-badge").value.trim(),
-      stock: stockVal==='' ? '' : parseInt(stockVal)
-    });
-    doPublish(); pgProds(); showToast("✅ Product added!","ok");
-  });
-
-  el.querySelectorAll("[data-action='prod-editdetails']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      var p  = (window.D.products||[]).find(function(x){return x.id===id;});
-      if(!p) return;
-      var cats = window.D.categories||[];
-      var catOpts2 = cats.map(function(c){
-        var val = c.link||c.name.toLowerCase();
-        return '<option value="'+h(val)+'"'+(p.cat===val?' selected':'')+'>'+h(c.emoji||"")+" "+h(c.name)+'</option>';
-      }).join('');
-      var modal = document.createElement("div");
-      modal.style.cssText="position:fixed;inset:0;z-index:9000;background:rgba(26,16,8,.85);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto";
-      modal.innerHTML='<div style="background:var(--white);border-radius:18px;padding:22px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto">'
-        +'<div style="font-family:\'Playfair Display\',serif;font-size:1.1rem;color:var(--warm);margin-bottom:14px;font-weight:700">✏️ Edit Product</div>'
-        +'<label class="fl">Product Name</label><input class="fi" id="ep-name" value="'+h(p.name)+'">'
-        +'<div class="f2">'
-        +'<div><label class="fl">Price ₹</label><input class="fi" id="ep-price" type="number" value="'+(p.price||0)+'"></div>'
-        +'<div><label class="fl">Original Price ₹</label><input class="fi" id="ep-orig" type="number" value="'+(p.originalPrice||0)+'"></div>'
-        +'</div>'
-        +'<label class="fl">Description</label><textarea class="fi" id="ep-desc">'+h(p.desc||'')+'</textarea>'
-        +'<div class="f2">'
-        +'<div><label class="fl">Category</label><select class="fi" id="ep-cat"><option value="">Select</option>'+catOpts2+'</select></div>'
-        +'<div><label class="fl">Sub-category</label><input class="fi" id="ep-subcat" value="'+h(p.subcat||'')+'"></div>'
-        +'</div>'
-        +'<div class="f2">'
-        +'<div><label class="fl">Sizes (comma separated)</label><input class="fi" id="ep-sizes" value="'+h((p.sizes||[]).join(', '))+'"></div>'
-        +'<div><label class="fl">Badge</label><input class="fi" id="ep-badge" value="'+h(p.badge||'')+'"></div>'
-        +'</div>'
-        +'<div class="f2">'
-        +'<div><label class="fl">Emoji</label><input class="fi" id="ep-emoji" value="'+h(p.emoji||'🎁')+'" style="width:80px"></div>'
-        +'<div></div>'
-        +'</div>'
-        +'<button id="ep-save" class="btn-full" style="margin-top:6px">💾 Save Changes &amp; Publish</button>'
-        +'<button id="ep-cancel" class="btn-full" style="margin-top:8px;background:var(--pale);color:var(--mid);border:var(--border)">Cancel</button>'
-        +'</div>';
-      document.body.appendChild(modal);
-      document.getElementById("ep-save").addEventListener("click", function(){
-        var name = document.getElementById("ep-name").value.trim();
-        var price = parseInt(document.getElementById("ep-price").value);
-        if(!name){ showToast("⚠️ Name required","err"); return; }
-        if(!price){ showToast("⚠️ Price required","err"); return; }
-        p.name  = name;
-        p.price = price;
-        p.originalPrice = parseInt(document.getElementById("ep-orig").value)||0;
-        p.desc  = document.getElementById("ep-desc").value.trim();
-        p.cat   = document.getElementById("ep-cat").value;
-        p.subcat= document.getElementById("ep-subcat").value.trim();
-        p.sizes = document.getElementById("ep-sizes").value.split(",").map(function(s){return s.trim();}).filter(Boolean);
-        p.badge = document.getElementById("ep-badge").value.trim();
-        p.emoji = document.getElementById("ep-emoji").value.trim()||"🎁";
-        document.body.removeChild(modal);
-        doPublish(); pgProds(); showToast("✅ Product updated!","ok");
-      });
-      document.getElementById("ep-cancel").addEventListener("click", function(){
-        document.body.removeChild(modal);
-      });
-      modal.addEventListener("click", function(e){ if(e.target===modal) document.body.removeChild(modal); });
-    });
-  });
-
-  el.querySelectorAll("[data-action='prod-photo']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      pickImage(8, function(src){
-        var p = (window.D.products||[]).find(function(x){return x.id===id;});
-        if(p){ p.img=src; doPublish(); pgProds(); showToast("📷 Photo updated!","ok"); }
-      });
-    });
-  });
-
-  el.querySelectorAll("[data-action='prod-video']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      var p  = (window.D.products||[]).find(function(x){return x.id===id;});
-      if(!p) return;
-      var inp = document.createElement("input");
-      inp.type="file"; inp.accept="video/*";
-      inp.onchange = function(){
-        var f=inp.files[0]; if(!f) return;
-        if(f.size>5*1024*1024){ showToast("❌ Video too large (max 5MB). Use a short clip or trim it first.","err"); return; }
-        var r=new FileReader();
-        r.onload=function(ev){ p.video=ev.target.result; doPublish(); pgProds(); showToast("🎬 Video uploaded!","ok"); };
-        r.readAsDataURL(f);
-      };
-      // Also allow clearing video
-      if(p.video && !confirm("Replace current video? OK = replace, Cancel = remove video")){ p.video=""; doPublish(); pgProds(); showToast("🎬 Video removed","info"); return; }
-      inp.click();
-    });
-  });
-
-  el.querySelectorAll("[data-action='prod-images']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      var p  = (window.D.products||[]).find(function(x){return x.id===id;});
-      if(!p) return;
-      p.images = p.images||[];
-      // Show a mini manager modal
-      var modal = document.createElement("div");
-      modal.style.cssText="position:fixed;inset:0;z-index:9000;background:rgba(26,16,8,.85);display:flex;align-items:center;justify-content:center;padding:16px";
-      function renderModal(){
-        var imgs = p.images||[];
-        var thumbs = imgs.map(function(src,i){
-          return '<div style="position:relative;display:inline-block;margin:4px">'
-            +'<img src="'+src+'" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid var(--gold)">'
-            +'<button data-idx="'+i+'" class="rm-img-btn" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:white;border:none;cursor:pointer;font-size:.75rem;line-height:1">×</button>'
-            +'</div>';
-        }).join('');
-        modal.innerHTML='<div style="background:var(--white);border-radius:18px;padding:22px;max-width:460px;width:100%">'
-          +'<div style="font-family:\'Playfair Display\',serif;font-size:1.05rem;color:var(--warm);margin-bottom:6px;font-weight:700">🖼️ Extra Gallery Photos</div>'
-          +'<div style="font-size:.76rem;color:var(--light);margin-bottom:4px">Product: <b>'+h(p.name)+'</b></div>'
-          +'<div style="font-size:.78rem;color:var(--mid);margin-bottom:14px;background:var(--pale);padding:10px 12px;border-radius:9px;border:var(--border);line-height:1.7">'
-          +'These are <b>extra photos</b> (not the cover photo) shown in the product detail popup.<br>'
-          +'Customers see them as a clickable photo strip when they tap a product. <b>Add 3–4 photos.</b>'
-          +'</div>'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
-          +'<span style="font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase">Gallery ('+imgs.length+'/4 photos)</span>'
-          +(imgs.length>0?'<span style="font-size:.71rem;color:var(--light)">Click × to remove a photo</span>':'')
-          +'</div>'
-          +'<div id="catImgThumbs" style="display:flex;flex-wrap:wrap;min-height:88px;margin-bottom:14px;padding:10px;border:var(--border);border-radius:11px;background:var(--cream);gap:8px;align-items:flex-start">'
-          +(imgs.length?thumbs:'<div style="color:var(--light);font-size:.82rem;padding:6px">No extra photos yet — add some below 👇</div>')
-          +'</div>'
-          +(imgs.length<4
-            ?'<button id="addCatImgBtn" class="btn-add" style="width:100%;justify-content:center;margin-bottom:12px;padding:11px">➕ Add Extra Photo ('+(4-imgs.length)+' remaining)</button>'
-            :'<div style="font-size:.78rem;color:var(--green);margin-bottom:12px;font-weight:700;padding:8px 12px;background:rgba(26,107,58,.07);border:1px solid rgba(26,107,58,.25);border-radius:8px">✅ 4/4 photos added — max reached. Remove one to add another.</div>')
-          +'<button id="closeCatModal" class="btn-full" style="background:linear-gradient(135deg,var(--warm),#4a2d10)">✅ Done — Save &amp; Publish</button>'
-          +'</div>';
-        modal.querySelectorAll(".rm-img-btn").forEach(function(rb){
-          rb.addEventListener("click", function(){
-            var idx=parseInt(this.getAttribute("data-idx"));
-            p.images.splice(idx,1);
-            doPublish(); renderModal(); showToast("Image removed","info");
-          });
-        });
-        var acb=modal.querySelector("#addCatImgBtn");
-        if(acb) acb.addEventListener("click",function(){
-          pickImage(8,function(src){ p.images=p.images||[]; if(p.images.length>=4){showToast("Max 4 extra photos","err");return;} p.images.push(src); doPublish(); renderModal(); showToast("🖼️ Extra photo added!","ok"); });
-        });
-        modal.querySelector("#closeCatModal").addEventListener("click",function(){ document.body.removeChild(modal); pgProds(); });
-      }
-      renderModal();
-      document.body.appendChild(modal);
-    });
-  });
-
-  el.querySelectorAll("[data-action='prod-stock']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id  = parseInt(this.getAttribute("data-id"));
-      var cur = this.getAttribute("data-stock");
-      var p   = (window.D.products||[]).find(function(x){return x.id===id;});
-      if(!p) return;
-      var val = prompt('Set stock for "'+p.name+'"\n\nEnter a number (e.g. 10)\nEnter 0 for Out of Stock\nLeave blank for Unlimited stock', cur);
-      if(val===null) return;
-      p.stock = val.trim()==='' ? '' : parseInt(val.trim());
-      doPublish(); pgProds(); showToast("✅ Stock updated!","ok");
-    });
-  });
-
-  el.querySelectorAll("[data-action='prod-del']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      var p  = (window.D.products||[]).find(function(x){return x.id===id;});
-      if(p && confirm("Delete \""+p.name+"\"?")){
-        window.D.products = window.D.products.filter(function(x){return x.id!==id;});
-        doPublish(); pgProds(); showToast("Deleted","info");
-      }
-    });
-  });
-}
-
-// ══════════════════════════
-// GIFT WRAPPING
-// ══════════════════════════
-function pgWraps(){
-  var el = document.getElementById("pageContent");
-  window.D.wrappers = window.D.wrappers || [];
-  var wraps = window.D.wrappers;
-
-  var html = '<div class="alert alert-g">🎁 <b>Gift Wrapping Options</b> — Upload a photo of each wrapper design. Customers will see these in the order form and can pick one. You can also set an extra charge per wrapper (set 0 for free).</div>';
-
-  // Existing wrappers
-  html += '<div class="box"><div class="box-head"><div class="box-title">🎁 Wrapper Designs ('+wraps.length+')</div></div><div class="box-body"><div class="rows-list" id="wrapList">';
-
-  wraps.forEach(function(w){
-    var thumb = w.img
-      ? '<img src="'+w.img+'" alt="">'
-      : '<span style="font-size:1.6rem">'+(w.emoji||"🎁")+'</span>';
-    html += '<div class="row-item">';
-    html += '<div class="row-thumb">'+thumb+'</div>';
-    html += '<div class="row-info">';
-    html += '<div class="row-name">'+h(w.name)+'</div>';
-    html += '<div class="row-meta">'+(w.price>0?'Extra charge: ₹'+w.price:'Free wrapping')+'</div>';
-    html += '</div>';
-    html += '<div class="row-actions">';
-    html += '<button class="btn-edit" data-action="wrap-photo" data-id="'+w.id+'">📷 Photo</button>';
-    html += '<button class="btn-edit" data-action="wrap-price" data-id="'+w.id+'" data-price="'+(w.price||0)+'">₹ Price</button>';
-    html += '<button class="btn-del" data-action="wrap-del" data-id="'+w.id+'">🗑️</button>';
-    html += '</div></div>';
-  });
-
-  html += '</div></div></div>';
-
-  // Add new wrapper form
-  html += '<div class="box"><div class="box-head"><div class="box-title">➕ Add New Wrapper Design</div></div><div class="box-body">';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Wrapper Name *</label><input class="fi" id="nw-name" placeholder="e.g. Red Floral, Gold Stars"></div>';
-  html += '<div><label class="fl">Emoji (shown if no photo)</label><input class="fi" id="nw-emoji" placeholder="🎁" style="width:80px"></div>';
-  html += '</div>';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Extra Charge ₹ (0 = free)</label><input class="fi" id="nw-price" type="number" placeholder="0" value="0"></div>';
-  html += '<div></div>';
-  html += '</div>';
-  html += '<button class="btn-full" id="addWrapBtn">➕ Add Wrapper &amp; Publish</button>';
-  html += '</div></div>';
-
-  el.innerHTML = html;
-
-  // Photo upload
-  el.querySelectorAll("[data-action='wrap-photo']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      pickImage(5, function(src){
-        var w = (window.D.wrappers||[]).find(function(x){return x.id===id;});
-        if(w){ w.img=src; doPublish(); pgWraps(); showToast("📷 Wrapper photo updated!","ok"); }
-      });
-    });
-  });
-
-  // Price edit
-  el.querySelectorAll("[data-action='wrap-price']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id  = parseInt(this.getAttribute("data-id"));
-      var cur = this.getAttribute("data-price");
-      var w   = (window.D.wrappers||[]).find(function(x){return x.id===id;});
-      if(!w) return;
-      var val = prompt('Extra charge for "'+w.name+'" wrapper?\nEnter 0 for free.', cur);
-      if(val===null) return;
-      w.price = parseInt(val)||0;
-      doPublish(); pgWraps(); showToast("✅ Price updated!","ok");
-    });
-  });
-
-  // Delete
-  el.querySelectorAll("[data-action='wrap-del']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      var w  = (window.D.wrappers||[]).find(function(x){return x.id===id;});
-      if(w && confirm("Remove \""+w.name+"\" wrapper?")){
-        window.D.wrappers = window.D.wrappers.filter(function(x){return x.id!==id;});
-        doPublish(); pgWraps(); showToast("Removed","info");
-      }
-    });
-  });
-
-  // Add new
-  document.getElementById("addWrapBtn").addEventListener("click", function(){
-    var name = document.getElementById("nw-name").value.trim();
-    if(!name){ showToast("⚠️ Enter wrapper name","err"); return; }
-    window.D.wrappers = window.D.wrappers||[];
-    if(window.D.wrappers.length>=10){ showToast("⚠️ Max 10 wrapper designs","err"); return; }
-    window.D.wrappers.push({
-      id:Date.now(),
-      name:name,
-      emoji:document.getElementById("nw-emoji").value.trim()||"🎁",
-      img:"",
-      price:parseInt(document.getElementById("nw-price").value)||0
-    });
-    doPublish(); pgWraps(); showToast("✅ Wrapper added!","ok");
-  });
-}
-
-// ══════════════════════════
-// CATEGORIES
-// ══════════════════════════
-
-// temporary subcats array for the "Add Category" form
-window._newSubs = [];
-
-function renderSubTags(containerId, catId){
-  var c   = catId ? (window.D.categories||[]).find(function(x){return x.id===catId;}) : null;
-  var arr = c ? (c.subcats||[]) : window._newSubs;
-  var el  = document.getElementById(containerId);
-  if(!el) return;
-  el.innerHTML = "";
-  arr.forEach(function(s, i){
-    var tag = document.createElement("span");
-    tag.style.cssText = "display:inline-flex;align-items:center;gap:5px;background:var(--pale);border:var(--border);border-radius:50px;padding:4px 10px;font-size:.78rem;color:var(--mid);margin:3px";
-    tag.innerHTML = h(s) + '<button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.9rem;line-height:1;padding:0 2px" data-idx="'+i+'" data-catid="'+(catId||"")+'" data-cont="'+containerId+'" class="rm-sub-tag">&times;</button>';
-    el.appendChild(tag);
-  });
-  // attach remove handlers
-  el.querySelectorAll(".rm-sub-tag").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var idx   = parseInt(this.getAttribute("data-idx"));
-      var cid   = parseInt(this.getAttribute("data-catid")) || 0;
-      var cont  = this.getAttribute("data-cont");
-      if(cid){
-        var cat = (window.D.categories||[]).find(function(x){return x.id===cid;});
-        if(cat){ cat.subcats.splice(idx,1); doPublish(); renderSubTags(cont, cid); showToast("Removed","info"); }
-      } else {
-        window._newSubs.splice(idx,1);
-        renderSubTags(cont, 0);
-      }
-    });
-  });
-}
-
-function addSubTag(inputId, containerId, catId){
-  var inp = document.getElementById(inputId);
-  var val = inp ? inp.value.trim() : "";
-  if(!val){ showToast("⚠️ Type a sub-category name first","err"); return; }
-  if(catId){
-    var cat = (window.D.categories||[]).find(function(x){return x.id===catId;});
-    if(!cat) return;
-    cat.subcats = cat.subcats||[];
-    if(cat.subcats.indexOf(val) !== -1){ showToast("Already exists","err"); return; }
-    cat.subcats.push(val);
-    doPublish(); renderSubTags(containerId, catId); showToast("✅ Sub-category added!","ok");
+  const editId = document.getElementById('edit-product-id').value;
+  if (editId) {
+    dbUpdate(`products/${editId}`, data)
+      .then(() => { toast('Product updated!', 'success'); closeProductModal(); })
+      .catch(() => toast('Failed to update', 'error'));
   } else {
-    if(window._newSubs.indexOf(val) !== -1){ showToast("Already exists","err"); return; }
-    window._newSubs.push(val);
-    renderSubTags(containerId, 0);
+    data.createdAt = Date.now();
+    dbPush('products', data)
+      .then(() => { toast('Product added!', 'success'); closeProductModal(); })
+      .catch(() => toast('Failed to add product', 'error'));
   }
-  inp.value = "";
 }
 
-function pgCats(){
-  var el   = document.getElementById("pageContent");
-  var cats = window.D.categories||[];
-  window._newSubs = [];
-
-  var html = '<div class="alert alert-g">✅ All categories show on the customer site. Add as many sub-categories as you want — they appear as filter tags on the products page.</div>';
-
-  // ── Existing categories ──
-  cats.forEach(function(c){
-    var thumb = c.img ? '<img src="'+c.img+'" alt="">' : '<span style="font-size:1.6rem">'+(c.emoji||"🎁")+'</span>';
-    html += '<div class="box">';
-    html += '<div class="box-head">';
-    html += '<div style="display:flex;align-items:center;gap:10px"><div class="row-thumb" style="width:36px;height:36px;flex-shrink:0">'+thumb+'</div>';
-    html += '<div class="box-title">'+(c.emoji||"")+" "+h(c.name)+'</div></div>';
-    html += '<div style="display:flex;gap:6px">';
-    html += '<button class="btn-edit" data-action="cat-photo" data-id="'+c.id+'">📷 Photo</button>';
-    html += '<button class="btn-del" data-action="cat-del" data-id="'+c.id+'">🗑️ Delete</button>';
-    html += '</div></div>';
-    html += '<div class="box-body">';
-    // description
-    html += '<div class="f2" style="margin-bottom:10px">';
-    html += '<div><label class="fl">Description</label><input class="fi" id="desc-'+c.id+'" value="'+h(c.desc||"")+'" style="margin-bottom:0"></div>';
-    html += '<div style="display:flex;align-items:flex-end"><button class="btn-edit" data-action="cat-save-desc" data-id="'+c.id+'" style="margin-bottom:0;height:38px">💾 Save Desc</button></div>';
-    html += '</div>';
-    // sub-categories tag manager
-    html += '<label class="fl">Sub-categories</label>';
-    html += '<div id="subtags-'+c.id+'" style="display:flex;flex-wrap:wrap;min-height:34px;margin-bottom:8px;padding:4px;border:var(--border);border-radius:9px;background:var(--pale)"></div>';
-    html += '<div style="display:flex;gap:6px;margin-bottom:4px">';
-    html += '<input class="fi" id="subinp-'+c.id+'" placeholder="e.g. Hanuman Frame, Krishna Frame" style="margin-bottom:0;flex:1">';
-    html += '<button class="btn-add" data-action="cat-addsub" data-id="'+c.id+'" style="flex-shrink:0">➕ Add</button>';
-    html += '</div>';
-    html += '</div></div>';
-  });
-
-  // ── Add New Category ──
-  html += '<div class="box"><div class="box-head"><div class="box-title">➕ Add New Category</div></div><div class="box-body">';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Category Name *</label><input class="fi" id="nc-name" placeholder="e.g. Photo Frames"></div>';
-  html += '<div><label class="fl">Emoji</label><input class="fi" id="nc-emoji" placeholder="🖼️" style="width:80px"></div>';
-  html += '</div>';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Description</label><input class="fi" id="nc-desc" placeholder="e.g. Premium wooden & metal frames"></div>';
-  html += '<div><label class="fl">Link ID (no spaces, lowercase)</label><input class="fi" id="nc-link" placeholder="e.g. frames"></div>';
-  html += '</div>';
-  html += '<label class="fl">Sub-categories (add as many as you want)</label>';
-  html += '<div id="subtags-new" style="display:flex;flex-wrap:wrap;min-height:34px;margin-bottom:8px;padding:4px;border:var(--border);border-radius:9px;background:var(--pale)"></div>';
-  html += '<div style="display:flex;gap:6px;margin-bottom:14px">';
-  html += '<input class="fi" id="subinp-new" placeholder="e.g. Family Frames" style="margin-bottom:0;flex:1">';
-  html += '<button class="btn-add" id="addNewSubBtn" style="flex-shrink:0">➕ Add Sub</button>';
-  html += '</div>';
-  html += '<button class="btn-full" id="addCatBtn">➕ Add Category &amp; Publish</button>';
-  html += '</div></div>';
-
-  el.innerHTML = html;
-
-  // Render existing sub-tags for each category
-  cats.forEach(function(c){
-    renderSubTags("subtags-"+c.id, c.id);
-
-    // "Enter" key on sub input
-    var sinp = document.getElementById("subinp-"+c.id);
-    if(sinp) sinp.addEventListener("keydown", function(e){
-      if(e.key==="Enter"){ e.preventDefault(); addSubTag("subinp-"+c.id, "subtags-"+c.id, c.id); }
-    });
-  });
-
-  // Render new-category sub-tags
-  renderSubTags("subtags-new", 0);
-
-  // "Enter" on new sub input
-  var ni = document.getElementById("subinp-new");
-  if(ni) ni.addEventListener("keydown", function(e){
-    if(e.key==="Enter"){ e.preventDefault(); addSubTag("subinp-new","subtags-new",0); }
-  });
-
-  document.getElementById("addNewSubBtn").addEventListener("click", function(){
-    addSubTag("subinp-new","subtags-new",0);
-  });
-
-  // Delegate clicks for cat-photo, cat-del, cat-addsub, cat-save-desc
-  el.querySelectorAll("[data-action='cat-photo']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      pickImage(8, function(src){
-        var c = (window.D.categories||[]).find(function(x){return x.id===id;});
-        if(c){ c.img=src; doPublish(); pgCats(); showToast("📷 Photo updated!","ok"); }
-      });
-    });
-  });
-
-  el.querySelectorAll("[data-action='cat-del']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      var c  = (window.D.categories||[]).find(function(x){return x.id===id;});
-      if(c && confirm("Delete category \""+c.name+"\"? This won't delete the products inside.")){
-        window.D.categories = window.D.categories.filter(function(x){return x.id!==id;});
-        doPublish(); pgCats(); showToast("Deleted","info");
-      }
-    });
-  });
-
-  el.querySelectorAll("[data-action='cat-addsub']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      addSubTag("subinp-"+id, "subtags-"+id, id);
-    });
-  });
-
-  el.querySelectorAll("[data-action='cat-save-desc']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id  = parseInt(this.getAttribute("data-id"));
-      var c   = (window.D.categories||[]).find(function(x){return x.id===id;});
-      var inp = document.getElementById("desc-"+id);
-      if(c && inp){ c.desc = inp.value.trim(); doPublish(); showToast("✅ Description saved!","ok"); }
-    });
-  });
-
-  // Add category submit
-  document.getElementById("addCatBtn").addEventListener("click", function(){
-    var name = document.getElementById("nc-name").value.trim();
-    if(!name){ showToast("⚠️ Enter category name","err"); return; }
-    window.D.categories = window.D.categories||[];
-    window.D.categories.push({
-      id:Date.now(), name:name,
-      emoji:document.getElementById("nc-emoji").value.trim()||"🎁",
-      desc:document.getElementById("nc-desc").value.trim(),
-      link:document.getElementById("nc-link").value.trim()||name.toLowerCase().replace(/\s+/g,"-"),
-      img:"",
-      subcats:window._newSubs.slice()
-    });
-    window._newSubs = [];
-    doPublish(); pgCats(); showToast("✅ Category added!","ok");
-  });
+function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  dbRemove(`products/${id}`)
+    .then(() => toast('Product deleted', 'info'))
+    .catch(() => toast('Failed to delete', 'error'));
 }
 
-// ══════════════════════════
-// REVIEWS
-// ══════════════════════════
-function pgRevs(){
-  var el   = document.getElementById("pageContent");
-  var revs = window.D.reviews||[];
-
-  var html = '<div class="box"><div class="box-head"><div class="box-title">⭐ Reviews ('+revs.length+')</div></div><div class="box-body"><div class="rows-list">';
-
-  revs.forEach(function(r){
-    var stars = "";
-    for(var i=0; i<(r.stars||5); i++) stars += "★";
-    html += '<div class="row-item" style="flex-wrap:wrap;height:auto;padding:12px">';
-    html += '<div style="flex:1;min-width:0">';
-    html += '<div style="color:#c9973a;margin-bottom:3px">'+stars+'</div>';
-    html += '<div style="font-size:.83rem;color:var(--mid);font-style:italic;margin-bottom:3px">"'+h(r.text)+'"</div>';
-    html += '<div style="font-size:.73rem;color:var(--light)">&mdash; '+h(r.name)+', '+(r.location||"Akot")+'</div>';
-    html += '</div>';
-    html += '<button class="btn-del" data-action="rev-del" data-id="'+r.id+'" style="align-self:flex-start;margin-left:8px">🗑️</button>';
-    html += '</div>';
-  });
-
-  html += '</div></div></div>';
-  html += '<div class="box"><div class="box-head"><div class="box-title">➕ Add Review</div></div><div class="box-body">';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">Customer Name *</label><input class="fi" id="nr-name" placeholder="Sneha Wankhede"></div>';
-  html += '<div><label class="fl">Location</label><input class="fi" id="nr-loc" placeholder="Akot"></div>';
-  html += '</div>';
-  html += '<label class="fl">Review Text *</label><textarea class="fi" id="nr-text" placeholder="What did the customer say?"></textarea>';
-  html += '<label class="fl">Stars (1 to 5)</label>';
-  html += '<input class="fi" id="nr-stars" type="number" min="1" max="5" value="5" style="width:80px;margin-bottom:14px">';
-  html += '<button class="btn-full" id="addRevBtn">➕ Add Review &amp; Publish</button>';
-  html += '</div></div>';
-
-  el.innerHTML = html;
-
-  el.querySelectorAll("[data-action='rev-del']").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = parseInt(this.getAttribute("data-id"));
-      if(confirm("Delete this review?")){
-        window.D.reviews = (window.D.reviews||[]).filter(function(x){return x.id!==id;});
-        doPublish(); pgRevs(); showToast("Deleted","info");
-      }
-    });
-  });
-
-  document.getElementById("addRevBtn").addEventListener("click", function(){
-    var name = document.getElementById("nr-name").value.trim();
-    var text = document.getElementById("nr-text").value.trim();
-    if(!name||!text){ showToast("⚠️ Enter name and review","err"); return; }
-    window.D.reviews = window.D.reviews||[];
-    window.D.reviews.push({
-      id:Date.now(), name:name,
-      location:document.getElementById("nr-loc").value.trim()||"Akot",
-      stars:parseInt(document.getElementById("nr-stars").value)||5,
-      text:text
-    });
-    doPublish(); pgRevs(); showToast("✅ Review added!","ok");
-  });
-}
-
-// ══════════════════════════
-// HERO BANNER
-// ══════════════════════════
-function pgHero(){
-  var el = document.getElementById("pageContent");
-  var hd = window.D.hero||{};
-  var st = hd.stats||{};
-
-  var html = '<div class="box"><div class="box-head"><div class="box-title">🌟 Hero Banner</div></div><div class="box-body">';
-  html += '<label class="fl">Main Headline</label>';
-  html += '<input class="fi" id="h-title" value="'+h(hd.title||"The Perfect Gift for Every Occasion")+'">';
-  html += '<label class="fl">Sub Text</label>';
-  html += '<textarea class="fi" id="h-sub">'+h(hd.sub||"")+'</textarea>';
-  html += '<div class="f3">';
-  html += '<div><label class="fl">Products Count</label><input class="fi" id="h-prod" value="'+h(st.products||"50+")+'" placeholder="50+"></div>';
-  html += '<div><label class="fl">Customers Count</label><input class="fi" id="h-cust" value="'+h(st.customers||"500+")+'" placeholder="500+"></div>';
-  html += '<div><label class="fl">Years</label><input class="fi" id="h-yrs" value="'+h(st.years||"5+")+'" placeholder="5+"></div>';
-  html += '</div>';
-  html += '<button class="btn-full" id="saveHeroBtn">💾 Save &amp; Publish</button>';
-  html += '</div></div>';
-  el.innerHTML = html;
-
-  document.getElementById("saveHeroBtn").addEventListener("click", function(){
-    window.D.hero = {
-      title:document.getElementById("h-title").value,
-      sub:document.getElementById("h-sub").value,
-      stats:{
-        products:document.getElementById("h-prod").value,
-        customers:document.getElementById("h-cust").value,
-        years:document.getElementById("h-yrs").value
-      }
-    };
-    doPublish(); showToast("✅ Hero banner saved!","ok");
-  });
-}
-
-// ══════════════════════════
-// BUSINESS INFO
-// ══════════════════════════
-function pgBiz(){
-  var el = document.getElementById("pageContent");
-  var b  = window.D.business||{};
-
-  var html = '<div class="box"><div class="box-head"><div class="box-title">🏪 Business Info</div></div><div class="box-body">';
-  html += '<label class="fl">Store Name</label><input class="fi" id="b-name" value="'+h(b.name||"")+'">';
-  html += '<label class="fl">Tagline</label><input class="fi" id="b-tag" value="'+h(b.tagline||"")+'">';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">WhatsApp Number (digits only, e.g. 919876543210)</label><input class="fi" id="b-wa" value="'+h(b.wa||"")+'" placeholder="919876543210"></div>';
-  html += '<div><label class="fl">Display Phone</label><input class="fi" id="b-phone" value="'+h(b.phone||"")+'"></div>';
-  html += '</div>';
-  html += '<div class="f2">';
-  html += '<div><label class="fl">City</label><input class="fi" id="b-city" value="'+h(b.city||"Akot, Maharashtra")+'"></div>';
-  html += '<div><label class="fl">Instagram (optional)</label><input class="fi" id="b-insta" value="'+h(b.insta||"")+'" placeholder="@bluebirdsgifthouse"></div>';
-  html += '</div>';
-  html += '<label class="fl">Default WhatsApp Message</label>';
-  html += '<textarea class="fi" id="b-wmsg">'+h(b.waMsg||"Hi! I want to place an order.")+'</textarea>';
-  html += '</div></div>';
-
-  html += '<div class="box"><div class="box-head"><div class="box-title">📱 UPI Payment Settings</div></div><div class="box-body">';
-  html += '<div class="alert-y alert" style="margin-bottom:14px">Add your UPI QR code and UPI ID here. Customers will see this when they choose UPI payment at checkout.</div>';
-  html += '<label class="fl">UPI ID (e.g. yourname@gpay or 9876543210@ybl)</label>';
-  html += '<input class="fi" id="b-upiid" value="'+h(b.upiId||"")+'" placeholder="yourname@gpay">';
-  html += '<label class="fl">UPI QR Code Image</label>';
-  html += '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:12px">';
-  var upiQR = b.upiQR||'';
-  if(upiQR){
-    html += '<img src="'+upiQR+'" style="width:100px;height:100px;object-fit:contain;border:var(--border);border-radius:10px;background:var(--pale)">';
-    html += '<div style="display:flex;flex-direction:column;gap:8px;justify-content:center">';
-    html += '<div style="font-size:.78rem;color:var(--green);font-weight:600">✅ QR code uploaded</div>';
-    html += '<button class="btn-edit" id="changeQRBtn">📷 Change QR</button>';
-    html += '<button class="btn-del" id="removeQRBtn">🗑️ Remove QR</button>';
-    html += '</div>';
+function previewProductImg() {
+  const url = document.getElementById('p-image').value.trim();
+  const wrap = document.getElementById('product-img-preview');
+  if (url) {
+    wrap.innerHTML = `<img src="${url}" style="max-height:120px;object-fit:contain"
+      onerror="this.parentElement.innerHTML='<div class=\\'img-hint\\'>Image not accessible — URL saved anyway</div>'"/>`;
   } else {
-    html += '<div style="width:100px;height:100px;border:2px dashed rgba(201,151,58,.4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--pale)">📱</div>';
-    html += '<div style="display:flex;flex-direction:column;gap:8px;justify-content:center">';
-    html += '<div style="font-size:.78rem;color:var(--light)">No QR uploaded yet</div>';
-    html += '<button class="btn-add" id="uploadQRBtn">📷 Upload QR Image</button>';
-    html += '<div style="font-size:.72rem;color:var(--light)">Get your QR from GPay / PhonePe app</div>';
-    html += '</div>';
+    wrap.innerHTML = '<div class="img-hint">Image preview</div>';
   }
-  html += '</div>';
-  html += '<input type="file" id="upiQRFileInp" accept="image/*" style="display:none">';
-  html += '<button class="btn-full" id="saveBizBtn">💾 Save Business Info &amp; Publish</button>';
-  html += '</div></div>';
+}
 
-  html += '<div class="box"><div class="box-head"><div class="box-title">🔑 Change Admin Password</div></div><div class="box-body">';
-  html += '<div class="f3">';
-  html += '<div><label class="fl">Current Password</label><input class="fi" type="password" id="pwd-cur" placeholder="Current"></div>';
-  html += '<div><label class="fl">New Password</label><input class="fi" type="password" id="pwd-new" placeholder="Min 6 characters"></div>';
-  html += '<div><label class="fl">Confirm New</label><input class="fi" type="password" id="pwd-con" placeholder="Repeat new"></div>';
-  html += '</div>';
-  html += '<button class="btn-full" id="changePwdBtn">🔑 Update Password</button>';
-  html += '</div></div>';
+function populateCatDatalist() {
+  const dl = document.getElementById('cat-list');
+  if (!dl) return;
+  const cats = new Set([
+    ...Object.values(allProductsAdmin).map(p=>p.category),
+    ...Object.values(allCatsAdmin).map(c=>c.name)
+  ].filter(Boolean));
+  dl.innerHTML = [...cats].map(c => `<option value="${c}"/>`).join('');
+}
 
-  el.innerHTML = html;
-
-  document.getElementById("saveBizBtn").addEventListener("click", function(){
-    var existing = window.D.business||{};
-    window.D.business = {
-      name:document.getElementById("b-name").value.trim(),
-      tagline:document.getElementById("b-tag").value.trim(),
-      wa:document.getElementById("b-wa").value.trim(),
-      phone:document.getElementById("b-phone").value.trim(),
-      city:document.getElementById("b-city").value.trim(),
-      insta:document.getElementById("b-insta").value.trim(),
-      waMsg:document.getElementById("b-wmsg").value.trim(),
-      upiId:document.getElementById("b-upiid").value.trim(),
-      upiQR:existing.upiQR||''
-    };
-    doPublish(); showToast("✅ Business info saved!","ok");
+/* ================================================================
+   CATEGORIES
+   ================================================================ */
+function renderCategoriesTable() {
+  const tbody = document.getElementById('cats-tbody');
+  const cats = Object.entries(allCatsAdmin);
+  // Also add from products if not in cats
+  const prodCats = new Set(Object.values(allProductsAdmin).map(p=>p.category).filter(Boolean));
+  const catNames = new Set(cats.map(([,c])=>c.name));
+  prodCats.forEach(pc => {
+    if (!catNames.has(pc)) cats.push([`_${pc}`, { name: pc, icon: '🎁' }]);
   });
 
-  // QR upload handlers
-  var qrInp = document.getElementById("upiQRFileInp");
-  function handleQRUpload(){
-    qrInp.click();
+  if (!cats.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text2)">No categories yet</td></tr>';
+    return;
   }
-  qrInp.addEventListener("change", function(){
-    var f = this.files[0]; if(!f) return;
-    if(f.size > 3*1024*1024){ showToast("⚠️ Max 3MB image","err"); return; }
-    var reader = new FileReader();
-    reader.onload = function(ev){
-      window.D.business = window.D.business||{};
-      window.D.business.upiQR = ev.target.result;
-      doPublish(); pgBiz(); showToast("✅ UPI QR uploaded!","ok");
-    };
-    reader.readAsDataURL(f);
-  });
-  var uploadBtn  = document.getElementById("uploadQRBtn");
-  var changeBtn  = document.getElementById("changeQRBtn");
-  var removeBtn  = document.getElementById("removeQRBtn");
-  if(uploadBtn) uploadBtn.addEventListener("click", handleQRUpload);
-  if(changeBtn) changeBtn.addEventListener("click", handleQRUpload);
-  if(removeBtn) removeBtn.addEventListener("click", function(){
-    if(confirm("Remove UPI QR code?")){
-      window.D.business = window.D.business||{};
-      window.D.business.upiQR = '';
-      doPublish(); pgBiz(); showToast("QR removed","info");
-    }
-  });
-
-  document.getElementById("changePwdBtn").addEventListener("click", function(){
-    var cur = document.getElementById("pwd-cur").value;
-    var nw  = document.getElementById("pwd-new").value;
-    var con = document.getElementById("pwd-con").value;
-    if(cur!==ADMIN_PWD){ showToast("❌ Current password wrong","err"); return; }
-    if(nw.length<6){ showToast("⚠️ Min 6 characters","err"); return; }
-    if(nw!==con){ showToast("❌ Passwords don't match","err"); return; }
-    ADMIN_PWD = nw;
-    localStorage.setItem("bbgh_pwd", nw);
-    showToast("✅ Password changed! Write it down.","ok");
-    ["pwd-cur","pwd-new","pwd-con"].forEach(function(id){ document.getElementById(id).value=""; });
-  });
+  tbody.innerHTML = cats.map(([id, c]) => {
+    const count = Object.values(allProductsAdmin).filter(p=>p.category===c.name).length;
+    return `<tr>
+      <td style="font-size:1.4rem">${c.icon||'🎁'}</td>
+      <td style="font-weight:600">${c.name}</td>
+      <td><span class="badge badge-purple">${count} products</span></td>
+      <td><div class="table-actions">
+        ${id.startsWith('_') ? '' : `
+          <button class="btn-edit" onclick="editCat('${id}')"><i class="fas fa-edit"></i></button>
+          <button class="btn-danger" onclick="deleteCat('${id}')"><i class="fas fa-trash"></i></button>`}
+      </div></td>
+    </tr>`;
+  }).join('');
 }
 
-// ══════════════════════════
-// COLORS
-// ══════════════════════════
-function pgColors(){
-  var el = document.getElementById("pageContent");
-  window.D.design = window.D.design||{};
-  var d = window.D.design;
+function openCatModal(id) {
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-icon').value = '';
+  document.getElementById('edit-cat-id').value = '';
+  document.getElementById('cat-modal').classList.add('open');
+}
+function closeCatModal() { document.getElementById('cat-modal').classList.remove('open'); }
 
-  function cpRow(label, id, val, presets){
-    var out = '<label class="fl">'+label+'</label><div class="color-row">';
-    out += '<div class="swatch" style="background:'+val+'"><input type="color" id="'+id+'" value="'+val+'"></div>';
-    out += '<div class="presets">';
-    presets.forEach(function(c){
-      out += '<div class="preset" data-for="'+id+'" data-color="'+c+'" style="background:'+c+'" title="'+c+'"></div>';
-    });
-    out += '</div></div>';
-    return out;
+function editCat(id) {
+  const c = allCatsAdmin[id];
+  if (!c) return;
+  document.getElementById('edit-cat-id').value = id;
+  document.getElementById('c-name').value = c.name || '';
+  document.getElementById('c-icon').value = c.icon || '';
+  document.getElementById('cat-modal').classList.add('open');
+}
+
+function saveCat() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) { toast('Category name required', 'error'); return; }
+  const data = { name, icon: document.getElementById('c-icon').value.trim() || '🎁' };
+  const editId = document.getElementById('edit-cat-id').value;
+  if (editId) {
+    dbUpdate(`categories/${editId}`, data)
+      .then(() => { toast('Category updated!', 'success'); closeCatModal(); });
+  } else {
+    dbPush('categories', data)
+      .then(() => { toast('Category added!', 'success'); closeCatModal(); });
   }
-
-  var html = '<div class="alert alert-y">🎨 Pick colors for your website. Click Save after each section to apply.</div>';
-
-  html += '<div class="box"><div class="box-head"><div class="box-title">🎨 Brand Colors</div></div><div class="box-body">';
-  html += cpRow("Primary Color (backgrounds, nav)", "cp-pri", d.primaryColor||"#2d1a08", ["#2d1a08","#1a1a2e","#0d2137","#1a3d2e","#4a0010","#0f2d2d","#1c1c1c","#3d2b1f"]);
-  html += cpRow("Secondary Color (buttons, accents)", "cp-sec", d.secondaryColor||"#c9973a", ["#c9973a","#e8b84b","#d4763b","#b5451b","#3b82f6","#16a34a","#9333ea","#dc2626"]);
-  html += cpRow("Accent Color (badges, tags)", "cp-acc", d.accentColor||"#b5451b", ["#b5451b","#dc2626","#c9973a","#16a34a","#3b82f6","#9333ea","#0f172a","#374151"]);
-  html += '<button class="btn-full" id="saveBrandBtn">💾 Save Brand Colors &amp; Publish</button>';
-  html += '</div></div>';
-
-  html += '<div class="box"><div class="box-head"><div class="box-title">🖼️ Page Background</div></div><div class="box-body">';
-  html += cpRow("Background Color", "cp-bg", d.bgColor||"#fdf8f0", ["#fdf8f0","#fff9f5","#f0f4ff","#f0fff4","#fff0f0","#f5f5f5","#fffef9","#fef9ee"]);
-  html += '<button class="btn-full" id="saveBgBtn">💾 Save Background &amp; Publish</button>';
-  html += '</div></div>';
-
-  html += '<div class="box"><div class="box-head"><div class="box-title">🦶 Footer Color</div></div><div class="box-body">';
-  html += cpRow("Footer Background", "cp-foot", d.footerBg||"#1a1008", ["#1a1008","#0d0d0d","#1a1a2e","#1a3d2e","#4a0010","#0f2d2d","#2d1a08","#0c1a4a"]);
-  html += '<button class="btn-full" id="saveFootBtn">💾 Save Footer Color &amp; Publish</button>';
-  html += '</div></div>';
-
-  el.innerHTML = html;
-
-  // Preset dot clicks
-  el.querySelectorAll(".preset").forEach(function(dot){
-    dot.addEventListener("click", function(){
-      var id  = this.getAttribute("data-for");
-      var col = this.getAttribute("data-color");
-      var inp = document.getElementById(id);
-      if(inp){ inp.value=col; inp.closest(".swatch").style.background=col; }
-    });
-  });
-
-  // Live preview on color change
-  el.querySelectorAll(".swatch input[type=color]").forEach(function(inp){
-    inp.addEventListener("input", function(){ this.closest(".swatch").style.background=this.value; });
-  });
-
-  document.getElementById("saveBrandBtn").addEventListener("click", function(){
-    window.D.design.primaryColor   = document.getElementById("cp-pri").value;
-    window.D.design.secondaryColor = document.getElementById("cp-sec").value;
-    window.D.design.accentColor    = document.getElementById("cp-acc").value;
-    doPublish(); showToast("✅ Brand colors saved!","ok");
-  });
-  document.getElementById("saveBgBtn").addEventListener("click", function(){
-    window.D.design.bgColor = document.getElementById("cp-bg").value;
-    doPublish(); showToast("✅ Background saved!","ok");
-  });
-  document.getElementById("saveFootBtn").addEventListener("click", function(){
-    window.D.design.footerBg = document.getElementById("cp-foot").value;
-    doPublish(); showToast("✅ Footer color saved!","ok");
-  });
 }
 
-// ══════════════════════════
-// FONTS
-// ══════════════════════════
-function pgFonts(){
-  var el  = document.getElementById("pageContent");
-  window.D.design = window.D.design||{};
-  var cur = window.D.design.fontFamily||"DM Sans";
-
-  var fonts = [
-    {name:"DM Sans + Playfair",val:"DM Sans",key:"DM Sans",desc:"Default — clean & elegant"},
-    {name:"Poppins",val:"'Poppins',sans-serif",key:"Poppins",desc:"Friendly & rounded"},
-    {name:"Inter",val:"'Inter',sans-serif",key:"Inter",desc:"Modern & minimal"},
-    {name:"Lato",val:"'Lato',sans-serif",key:"Lato",desc:"Professional & clean"},
-    {name:"Nunito",val:"'Nunito',sans-serif",key:"Nunito",desc:"Soft & warm"},
-    {name:"Raleway",val:"'Raleway',sans-serif",key:"Raleway",desc:"Stylish & elegant"}
-  ];
-
-  var html = '<div class="alert alert-y">✍️ Click a font to apply it. Changes publish instantly.</div>';
-  html += '<div class="box"><div class="box-head"><div class="box-title">✍️ Font Style</div></div><div class="box-body"><div class="font-grid">';
-
-  fonts.forEach(function(f){
-    var active = cur.includes(f.key);
-    html += '<div class="font-card '+(active?"active":"")+'" data-val="'+f.val+'" data-key="'+f.key+'" style="font-family:'+f.val+'">';
-    html += '<div style="font-size:.78rem;font-weight:600;color:var(--warm);margin-bottom:4px">'+f.name+'</div>';
-    html += '<div style="font-size:1.1rem;color:var(--mid)">Gift House</div>';
-    html += '<div style="font-size:.7rem;color:var(--light);margin-top:4px">'+f.desc+'</div>';
-    if(active) html += '<div style="font-size:.7rem;color:var(--green);font-weight:700;margin-top:4px">✅ Active</div>';
-    html += '</div>';
-  });
-
-  html += '</div></div></div>';
-  el.innerHTML = html;
-
-  el.querySelectorAll(".font-card").forEach(function(card){
-    card.addEventListener("click", function(){
-      window.D.design.fontFamily = this.getAttribute("data-val");
-      doPublish(); pgFonts(); showToast("✅ Font saved!","ok");
-    });
-  });
+function deleteCat(id) {
+  if (!confirm('Delete this category?')) return;
+  dbRemove(`categories/${id}`).then(() => toast('Category deleted', 'info'));
 }
 
-// ══════════════════════════
-// DEPLOY / LINKS
-// ══════════════════════════
-function pgDeploy(){
-  var el = document.getElementById("pageContent");
-  var html = '';
-  html += '<div class="alert alert-g"><b>✅ Real-time sync active!</b> Every time you click ☁️ Save & Publish, the customer site updates instantly — no re-uploading files.</div>';
-  html += '<div class="box"><div class="box-head"><div class="box-title">🔗 Your Website Links</div></div><div class="box-body">';
-  html += '<div class="alert alert-y"><b>📲 Customer Website</b> — share this link with everyone:<br><code style="font-family:monospace">https://bluebirdsgifthouse.github.io</code></div>';
-  html += '<div class="alert alert-r"><b>🔒 Admin Panel</b> — keep this link private, only you should use it:<br><code style="font-family:monospace">https://bluebirdsgifthouse.github.io/admin.html</code></div>';
-  html += '</div></div>';
-  html += '<div class="box"><div class="box-head"><div class="box-title">ℹ️ How Updates Work</div></div><div class="box-body">';
-  html += '<div class="alert alert-y">';
-  html += '<b>Products, prices, images, reviews, colors:</b><br>Make changes here → click ☁️ Save &amp; Publish → done! Customer site updates in 1 second.<br><br>';
-  html += '<b>If the HTML files (design/layout) need changing:</b><br>Upload the new .html file to your GitHub repo → wait 1-2 minutes for GitHub to redeploy.';
-  html += '</div></div></div>';
-  el.innerHTML = html;
+/* ================================================================
+   ORDERS
+   ================================================================ */
+function renderOrders() {
+  const filter = document.getElementById('orders-filter')?.value || 'all';
+  let orders = Object.entries(allOrdersAdmin)
+    .sort(([,a],[,b]) => (b.timestamp||0) - (a.timestamp||0));
+  if (filter !== 'all') orders = orders.filter(([,o]) => o.status === filter);
+
+  const el = document.getElementById('orders-list');
+  if (!orders.length) {
+    el.innerHTML = '<div class="empty-state"><i class="fas fa-box"></i><p>No orders found</p></div>';
+    return;
+  }
+  el.innerHTML = orders.map(([id, o]) => {
+    const date = o.timestamp ? new Date(o.timestamp).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const itemsList = (o.items||[]).map(i => {
+      const key = Object.keys(allProductsAdmin).find(k=>k===i.id);
+      const p = key ? allProductsAdmin[key] : null;
+      return `• ${p ? p.name : i.id} × ${i.qty||1}`;
+    }).join('<br>');
+    return `
+    <div class="order-card">
+      <div class="order-hdr">
+        <div>
+          <div class="order-id">#${id.slice(-6).toUpperCase()} · ${date}</div>
+          <div class="order-name">${o.name||'—'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:1.2rem;font-weight:700;color:var(--accent)">₹${o.total||0}</div>
+          <div style="font-size:0.75rem;color:var(--text2)">${(o.payment||'cod').toUpperCase()}</div>
+        </div>
+      </div>
+      <div class="order-meta">
+        <span><i class="fas fa-phone"></i>${o.phone||'—'}</span>
+        <span><i class="fas fa-map-marker-alt"></i>${(o.address||'—').substring(0,40)}${o.address&&o.address.length>40?'...':''}</span>
+        ${o.giftWrap==='yes'?'<span><i class="fas fa-gift"></i>Gift Wrap</span>':''}
+        ${o.txnId?`<span><i class="fas fa-receipt"></i>TXN: ${o.txnId}</span>`:''}
+      </div>
+      ${itemsList ? `<div class="order-items-list">${itemsList}</div>` : ''}
+      ${o.notes ? `<div style="font-size:0.82rem;color:var(--text2);padding:6px 0">📝 ${o.notes}</div>` : ''}
+      <div class="order-status-row">
+        <span style="font-size:0.82rem;font-weight:600;color:var(--text2)">Status:</span>
+        ${statusBadge(o.status)}
+        <select class="status-select" onchange="updateOrderStatus('${id}',this.value)">
+          <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
+          <option value="confirmed" ${o.status==='confirmed'?'selected':''}>Confirmed</option>
+          <option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option>
+          <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option>
+        </select>
+        <button class="btn-danger" onclick="deleteOrder('${id}')"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ══════════════════════════
-// FIX FIREBASE
-// ══════════════════════════
-function pgFixFb(){
-  var el = document.getElementById("pageContent");
-  var rules = '{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}';
-
-  var html = '';
-  html += '<div class="alert alert-g"><b>Firebase Project:</b> bluebirdsgifthouse-fcbef<br><b>Database:</b> <code>bluebirdsgifthouse-fcbef-default-rtdb.asia-southeast1.firebasedatabase.app</code></div>';
-
-  html += '<div class="box"><div class="box-head"><div class="box-title">✅ Step 1 — Database Rules</div></div><div class="box-body">';
-  html += '<div class="alert alert-y">Go to <b>console.firebase.google.com</b> &rarr; your project &rarr; Build &rarr; Realtime Database &rarr; <b>Rules</b> tab &rarr; delete everything &rarr; paste the text below &rarr; click <b>Publish</b> &rarr; click <b>"Publish anyway"</b> on the popup.</div>';
-  html += '<div class="codebox"><pre>'+rules+'</pre><button class="copy-btn" id="copyRules">📋 Copy</button></div>';
-  html += '<div class="alert alert-r">⚠️ A warning popup will appear — click <b>"Publish anyway"</b>. Do NOT click Dismiss!</div>';
-  html += '</div></div>';
-
-  html += '<div class="box"><div class="box-head"><div class="box-title">🔄 Step 2 — Test Connection</div></div><div class="box-body">';
-  html += '<button class="btn-test" id="testFbBtn">🔄 Test Firebase Now</button>';
-  html += '<div class="test-res" id="testRes"></div>';
-  html += '</div></div>';
-
-  html += '<div class="box"><div class="box-head"><div class="box-title">🔑 Step 3 — Authorized Domains</div></div><div class="box-body">';
-  html += '<div class="alert alert-y">Go to Firebase Console &rarr; Authentication &rarr; Settings &rarr; <b>Authorized domains</b> &rarr; Add domain &rarr; type:<br>';
-  html += '<code>bluebirdsgifthouse.github.io</code><br>Then click Add.</div>';
-  html += '</div></div>';
-
-  el.innerHTML = html;
-
-  document.getElementById("copyRules").addEventListener("click", function(){
-    navigator.clipboard.writeText(rules).then(function(){ showToast("📋 Rules copied!","ok"); });
-  });
-
-  document.getElementById("testFbBtn").addEventListener("click", async function(){
-    var res = document.getElementById("testRes");
-    res.className = "test-res show";
-    res.style.cssText = "background:#fef9c3;border:1px solid #fde047;color:#854d0e;border-radius:11px;padding:13px;margin-top:11px;font-size:.87rem;font-weight:600;display:block";
-    res.textContent = "⏳ Testing...";
-    if(!window._fbTest){
-      res.className = "test-res show fail";
-      res.textContent = "❌ Firebase SDK still loading. Wait a moment and try again.";
-      return;
-    }
-    var r = await window._fbTest();
-    if(r.ok){
-      res.className = "test-res show ok";
-      res.innerHTML = "✅ <b>Firebase is working!</b> Click ☁️ Save &amp; Publish to sync your data.";
-      if(window._setFbChip) window._setFbChip("g","✅ Connected");
-    } else {
-      res.className = "test-res show fail";
-      var msg = r.err||"Unknown error";
-      res.innerHTML = msg.includes("PERMISSION")
-        ? "❌ <b>PERMISSION DENIED</b> — go to Step 1 and make sure you clicked <b>'Publish anyway'</b> on the Firebase popup."
-        : "❌ Error: "+h(msg);
-    }
-  });
+function updateOrderStatus(id, status) {
+  dbUpdate(`orders/${id}`, { status })
+    .then(() => toast(`Order marked as ${status}`, 'success'))
+    .catch(() => toast('Failed to update', 'error'));
 }
 
-// ── INIT ──
-window.addEventListener("DOMContentLoaded", function(){
-  document.getElementById("loginPwd").focus();
-});
-</script>
-</body>
-</html>
+function deleteOrder(id) {
+  if (!confirm('Delete this order?')) return;
+  dbRemove(`orders/${id}`).then(() => toast('Order deleted', 'info'));
+}
+
+/* ================================================================
+   REVIEWS
+   ================================================================ */
+function renderReviewsList() {
+  const el = document.getElementById('reviews-list');
+  const reviews = Object.entries(allReviewsAdmin);
+  if (!reviews.length) {
+    el.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>No reviews yet</p></div>';
+    return;
+  }
+  el.innerHTML = reviews.map(([id, r]) => `
+    <div class="review-admin-card">
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">
+        ${(r.name||'?')[0].toUpperCase()}
+      </div>
+      <div class="review-admin-info">
+        <div class="review-admin-name">${r.name||'Anonymous'} <span style="font-size:0.72rem;color:var(--text2);font-weight:normal">${r.date||''}</span></div>
+        <div class="review-admin-
