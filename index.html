@@ -1889,7 +1889,7 @@ function launchRazorpay(){
   var o=pendingOrder;if(!o){showToast('No order details found');return;}
   var biz=STORE.business||{};
   // IMPORTANT: Replace 'YOUR_RAZORPAY_KEY_ID' with your actual Razorpay Key ID
-  var rzpKeyId=(biz.razorpayKeyId||'YOUR_RAZORPAY_KEY_ID');
+  var rzpKeyId=(biz.razorpayKeyId||'rzp_test_SWmNa5TPN3xPET');
   var options={
     key: rzpKeyId,
     amount: o.total*100, // Razorpay expects paise
