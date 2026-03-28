@@ -6,7 +6,7 @@
 <title id="siteTitle">Bluebirds Gift House – Akot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
 <style id="dynamicStyles">
 /* ═══════════════════════════════════════════════════════
    BLUEBIRDS GIFT HOUSE — PREMIUM UI v2.0
@@ -1201,8 +1201,6 @@ footer{
 </div>
 
 <section class="hero" id="home">
-  <div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(201,151,58,.07),transparent 70%);top:-80px;right:10%;pointer-events:none;z-index:0"></div>
-  <div style="position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(201,151,58,.05),transparent 70%);bottom:50px;left:5%;pointer-events:none;z-index:0"></div>
   <div class="hero-bg-img" id="heroBgImg"><img id="heroBgImgEl" src="" alt=""></div>
   <div class="hero-overlay" id="heroOverlay"></div>
   <div class="hero-left">
@@ -1479,8 +1477,8 @@ window.STORE = {
 })();
 
 window._fbLoaded=false;
-window._fbTimeout=setTimeout(function(){if(!window._fbLoaded){window._fbLoaded=true;if(typeof window.renderPage==='function')window.renderPage();if(typeof window.hideLoader==='function')window.hideLoader();}},4000);
-setTimeout(function(){var l=document.getElementById('loader');if(l&&l.style.display!=='none'&&!l._hidden){l.style.cssText='display:none !important';console.warn('Loader force-hidden by failsafe');}},7000);
+window._fbTimeout=setTimeout(function(){if(!window._fbLoaded){window._fbLoaded=true;if(typeof window.renderPage==='function')window.renderPage();}},2500);
+setTimeout(function(){var l=document.getElementById('loader');if(l&&!l._gone){l._gone=true;l.style.cssText='display:none !important';if(typeof window.renderPage==='function')window.renderPage();}},6000);
 
 let cart=JSON.parse(localStorage.getItem('bbgh_cart')||'[]');
 let favs=JSON.parse(localStorage.getItem('bbgh_favs')||'[]');
@@ -1607,7 +1605,7 @@ function renderFavs(){
 // ═══════════════════════════════════════════
 // PAGE / DESIGN
 // ═══════════════════════════════════════════
-window.hideLoader=function(){var l=document.getElementById('loader');if(!l||l._hidden)return;l._hidden=true;l.style.opacity='0';l.style.pointerEvents='none';setTimeout(function(){if(l){l.style.cssText='display:none !important';}},500);};
+window.hideLoader=function(){var l=document.getElementById('loader');if(!l||l._gone)return;l._gone=true;l.style.opacity='0';l.style.transition='opacity 0.35s';setTimeout(function(){if(l)l.style.cssText='display:none !important';},380);};
 window.renderPage=function(){applyDesign();applyBusiness();applyHero();renderHeroCards();renderCategories();renderProducts();renderReviews();setupReveal();updateFavBadge();updateCartUI();if(typeof window.hideLoader==='function')window.hideLoader();};
 function waLink(){const b=STORE.business||{};return'https://wa.me/'+(b.wa||'919876543210')+'?text='+encodeURIComponent(b.waMsg||'Hi! I want to place an order.');}
 
@@ -2261,8 +2259,6 @@ window.OFFER_SLIDES=[
 document.addEventListener('DOMContentLoaded',function(){
   // Auth UI
   updateAuthUI();
-  // Fallback render if Firebase stalls
-  setTimeout(function(){var l=document.getElementById('loader');if(l&&l.style.display!=='none'&&!l._hidden){if(typeof window.renderPage==='function')window.renderPage();}},5000);
   updateFavBadge();
 
   // Search
@@ -2289,7 +2285,8 @@ document.addEventListener('DOMContentLoaded',function(){
     window.addEventListener('mousemove',function(e){if(!_zDragging)return;_zOffX+=e.clientX-_zLastX;_zOffY+=e.clientY-_zLastY;_zLastX=e.clientX;_zLastY=e.clientY;clampPan();applyZoomTransform();});
     window.addEventListener('mouseup',function(){_zDragging=false;var w=document.getElementById('zoomWrap');if(w)w.classList.remove('dragging');});
     wrap.addEventListener('touchstart',function(e){if(e.touches.length===2){_zPinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}else if(e.touches.length===1&&_zScale>1){_zDragging=true;_zLastX=e.touches[0].clientX;_zLastY=e.touches[0].clientY;}},{passive:true});
-    wrap.addEventListener('touchmove',function(e){if(e.touches.length===2){e.preventDefault();var dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);_zScale=Math.min(_zMaxScale,Math.max(_zMinScale,parseFloat((_zScale*(dist/_zPinchDist)).toFixed(2))));_zPinchDist=dist;clampPan();applyZoomTransform();}else if(e.touches.length===1&&_zDragging){_zOffX+=e.touchar now=Date.now();if(now-(_zLastTap||0)<280){if(_zScale>1)zoomReset();else{_zScale=2.5;clampPan();applyZoomTransform();}}_zLastTap=now;});
+    wrap.addEventListener('touchmove',function(e){if(e.touches.length===2){e.preventDefault();var dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);_zScale=Math.min(_zMaxScale,Math.max(_zMinScale,parseFloat((_zScale*(dist/_zPinchDist)).toFixed(2))));_zPinchDist=dist;clampPan();applyZoomTransform();}else if(e.touches.length===1&&_zDragging){_zOffX+=e.touches[0].clientX-_zLastX;_zOffY+=e.touches[0].clientY-_zLastY;_zLastX=e.touches[0].clientX;_zLastY=e.touches[0].clientY;clampPan();applyZoomTransform();}},{passive:false});
+    wrap.addEventListener('touchend',function(){_zDragging=false;var now=Date.now();if(now-(_zLastTap||0)<280){if(_zScale>1)zoomReset();else{_zScale=2.5;clampPan();applyZoomTransform();}}_zLastTap=now;});
   }
 
   // Close user dropdown when clicking outside
@@ -2305,7 +2302,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // polPhone sync
   var el=document.getElementById('polPhone');
-  if(el&&window.STORE&&window.STORE.business&&window.STORE.business.phone){el.textContent=window.STORE.business.phone;}
+  window.STORE.business.phone;}
   // contactWABtn
   var cwa=document.getElementById('contactWABtn');
   if(cwa)cwa.href=waLink();
